@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 )
 
-var squareSize int = 40
+var squareSize int = 25
 
 func main() {
 	palette := []Pixel{
@@ -13,20 +13,19 @@ func main() {
 		PixelFromInt32(0xd00000),
 		PixelFromInt32(0x8ecae6),
 		PixelFromInt32(0x023047),
+		PixelFromInt32(0x124057),
+		PixelFromInt32(0x225068),
 		PixelFromInt32(0x219ebc),
 		PixelFromInt32(0x2a9d8f),
 		PixelFromInt32(0xccc5b9),
 	}
-	// printAveragedImage(palette)
-	// printAveragedImage(Palette{})
-
-	printPaletteImage(palette)
-	// printPaletteImage(Palette{})
-	// printHarsherPixelatedImage()
-	// printPixelatedImage()
+	printAveragedImage(palette)
+	printAveragedImage(Palette{})
+	printHarsherPixelatedImage()
+	printPixelatedImage()
 }
 
-func printPaletteImage(p Palette) {
+func printPaletteImage(p Palette, paletteFname string) {
 	if len(p) == 0 {
 		file := filepath.Join("testdata", "sample.jpg")
 		bfr := FromJPEG(file)
@@ -34,14 +33,18 @@ func printPaletteImage(p Palette) {
 	}
 
 	edit := p.ToImageBuffer(50)
-	edit.ToJPEGFile("out.jpg")
+	edit.ToJPEGFile(paletteFname)
 }
 
 func printAveragedImage(palette Palette) {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := FromJPEG(file)
+	outputFname := "average-with-palette.jpg"
+	paletteFname := "supplied-palette.jpg"
 	if len(palette) == 0 {
-		palette = bfr.Palette(24) // from image itself
+		palette = bfr.Palette(12) // from image itself
+		outputFname = "average-image-palette.jpg"
+		paletteFname = "image-palette.jpg"
 	}
 	square := squareSize
 	edit := make([]*Pixel, len(bfr.pixels))
@@ -86,7 +89,8 @@ func printAveragedImage(palette Palette) {
 		width:  bfr.width,
 		height: bfr.height,
 		pixels: edit}
-	b2.ToJPEGFile("out.jpg")
+	b2.ToJPEGFile(outputFname)
+	printPaletteImage(palette, paletteFname)
 }
 
 func printHarsherPixelatedImage() {
@@ -134,7 +138,7 @@ func printHarsherPixelatedImage() {
 		width:  bfr.width,
 		height: bfr.height,
 		pixels: edit}
-	b2.ToJPEGFile("out.jpg")
+	b2.ToJPEGFile("harsher.jpg")
 }
 
 func printPixelatedImage() {
@@ -165,5 +169,5 @@ func printPixelatedImage() {
 		width:  bfr.width,
 		height: bfr.height,
 		pixels: edit}
-	b2.ToJPEGFile("out.jpg")
+	b2.ToJPEGFile("pixelated.jpg")
 }
