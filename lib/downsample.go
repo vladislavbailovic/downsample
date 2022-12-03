@@ -71,21 +71,21 @@ func normalizeWrapper(done chan bool) js.Func {
 	})
 }
 
-func averageWrapper(done chan bool) js.Func {
-	palette := []pkg.Pixel{
-		pkg.PixelFromInt32(0xffb703),
-		pkg.PixelFromInt32(0xfb8500),
-		pkg.PixelFromInt32(0xd00000),
-		pkg.PixelFromInt32(0x8ecae6),
-		pkg.PixelFromInt32(0x023047),
-		pkg.PixelFromInt32(0x124057),
-		pkg.PixelFromInt32(0x225068),
-		pkg.PixelFromInt32(0x219ebc),
-		pkg.PixelFromInt32(0x2a9d8f),
-		pkg.PixelFromInt32(0xccc5b9),
+func parsePalette(raw js.Value) pkg.Palette {
+	p := make([]pkg.Pixel, raw.Length())
+	for i := 0; i < raw.Length(); i++ {
+		p[i] = pkg.PixelFromInt32(int32(raw.Index(i).Int()))
 	}
+	return p
+}
+
+func averageWrapper(done chan bool) js.Func {
+	palette := []pkg.Pixel{}
 	return js.FuncOf(func(this js.Value, args []js.Value) any {
 		img := jsToImageBuffer(args, done)
+		if len(args) > 3 {
+			palette = parsePalette(args[3])
+		}
 		b2 := pkg.ConstrainImage(img, palette).Pixels()
 		return imageBufferToJs(b2)
 	})

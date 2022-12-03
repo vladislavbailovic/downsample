@@ -5,20 +5,53 @@
 		<script>
 			const go = new Go();
 			WebAssembly.instantiateStreaming(fetch("assets/downsample.wasm"), go.importObject).then((result) => {
-				console.log(result)
 				go.run(result.instance);
 			});
 		</script>
+
+
+<style>
+.controls {
+	display: flex;
+	align-items: center;
+}
+
+.palette {
+	display: flex;
+	align-items: center;
+}
+.palette .color {
+	width: 6em;
+}
+.palette .color input {
+	width: 100%;
+}
+.palette .color:before {
+	display: block;
+	width: 6em;
+	height: 30px;
+	content: ' ';
+}
+</style>
 	</head>
 	<body>
 
 <div class="interface">
 	<div class="controls">
+
 		<select id="algo">
 			<option value="pixelate">Pixelate</option>
 			<option value="normalize">... and normalize</option>
 			<option value="average">Average</option>
 		</select>
+
+		<div class="palette">
+			<div class="color"> <input type="colorpicker" class="color" value="#ffb703" /> </div>
+			<div class="color"> <input type="colorpicker" class="color" value="#fb8500" /> </div>
+			<div class="color"> <input type="colorpicker" class="color" value="#8ecae6" /> </div>
+			<button class="add">Add</button>
+		</div>
+
 	</div>
 	<div class="io">
 		<img id="input-file" src="sample.jpg" />

@@ -18,16 +18,44 @@ const getSource = () => {
 	return ctx.getImageData(0, 0, input.width, input.height);
 }
 
+const getPalette = () => {
+	return [...document.querySelectorAll(".palette input")]
+		.map(x => parseInt(x.value.substr(1), 16));
+}
+
 const render = algo => {
 	img = getSource();
 	if ("average" == algo) {
-		raw = average(img.data, img.width, img.height)
+		palette = getPalette()
+		raw = average(img.data, img.width, img.height, palette)
 	} else if ("normalize" == algo) {
 		raw = normalize(img.data, img.width, img.height)
 	} else {
 		raw = pixelate(img.data, img.width, img.height)
 	}
 	renderData(new ImageData(raw, img.width, img.height));
+	updateInterface(algo)
+}
+
+const updateInterface = algo => {
+	const palette = document.querySelector(".palette");
+	if (algo != "average") {
+		palette.style.display = "none";
+		return;
+	}
+
+	palette.style.display = "flex";
+	[...palette.querySelectorAll(".color")].map(c => {
+		const x = c.querySelector("input");
+		if (!x) return;
+
+		c.style.backgroundColor = x.value;
+	});
+}
+
+const rerender = () => {
+	const algo = document.getElementById("algo")
+	render(algo.value)
 }
 
 const init = () => {
@@ -35,7 +63,23 @@ const init = () => {
 	algo.addEventListener("change", e => {
 		render(algo.value)
 	});
-	render()
+
+	const add = document.querySelector(".palette .add");
+	add.addEventListener("click", e => {
+		const palette = document.querySelector(".palette");
+		const clr = palette.querySelector(".color")
+			.cloneNode(true);
+		add.before(clr);
+		render(algo.value);
+	});
+
+	document.addEventListener("change", e => {
+		if (e.target.nodeName == "INPUT" && e.target.closest(".color")) {
+			rerender();
+		}
+	});
+
+	render();
 }
 
 window.addEventListener("load", init);
