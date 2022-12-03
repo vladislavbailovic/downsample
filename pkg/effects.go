@@ -1,4 +1,6 @@
-package main
+package pkg
+
+var squareSize int = 25
 
 type pixelateMode byte
 

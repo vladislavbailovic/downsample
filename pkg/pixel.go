@@ -1,4 +1,4 @@
-package main
+package pkg
 
 type Pixel struct {
 	R, G, B uint8
