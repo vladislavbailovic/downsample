@@ -33,3 +33,34 @@ func Test_Palette_ClosestTo(t *testing.T) {
 		})
 	}
 }
+
+func Test_Palette_ToImage(t *testing.T) {
+	tileSize := 5
+	palette := Palette{
+		PixelFromInt32(0xFF0000),
+		PixelFromInt32(0x00FF00),
+		PixelFromInt32(0x0000FF),
+	}
+	img := palette.ToImage(tileSize)
+	bfr := FromImage(img)
+
+	if bfr.height != tileSize {
+		t.Errorf("unexpected palette image height: %d",
+			bfr.height)
+	}
+
+	if bfr.width != len(palette)*tileSize {
+		t.Errorf("unexpected palette image width: %d",
+			bfr.width)
+	}
+
+	for idx, px := range bfr.pixels {
+		pos := (idx / tileSize) % len(palette)
+		expected := palette[pos].Hex()
+		actual := px.Hex()
+		if expected != actual {
+			t.Errorf("at %d, wanted %06x, got %06x",
+				idx, expected, actual)
+		}
+	}
+}

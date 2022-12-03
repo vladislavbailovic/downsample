@@ -28,6 +28,10 @@ func FromJPEG(imgfile string) *ImageBuffer {
 		fmt.Fprintf(os.Stderr, "unable to decode JPEG: %v", err)
 	}
 
+	return FromImage(img)
+}
+
+func FromImage(img image.Image) *ImageBuffer {
 	bounds := img.Bounds()
 	bfr := make([]*Pixel, bounds.Max.X*bounds.Max.Y)
 
