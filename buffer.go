@@ -6,7 +6,6 @@ import (
 	"image/color"
 	"image/jpeg"
 	"os"
-	"path/filepath"
 	"sort"
 )
 
@@ -16,7 +15,7 @@ type ImageBuffer struct {
 }
 
 func FromJPEG(imgfile string) *ImageBuffer {
-	fp, err := os.Open(filepath.Join("testdata", imgfile))
+	fp, err := os.Open(imgfile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to open image: %v", err)
 		return nil
@@ -81,6 +80,21 @@ func (b *ImageBuffer) ToImage() image.Image {
 		}
 	}
 	return img
+}
+
+func (b *ImageBuffer) ToJPEGFile(imgpath string) error {
+	edit := b.ToImage()
+	writer, err := os.Create(imgpath)
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+
+	if err := jpeg.Encode(writer, edit, nil); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (b *ImageBuffer) Palette(size uint8) Palette {

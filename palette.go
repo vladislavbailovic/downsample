@@ -26,6 +26,11 @@ func (p Palette) ToImage(tileSize int) image.Image {
 	return img
 }
 
+// TODO: wow this is super inefficient
+func (p Palette) ToImageBuffer(tileSize int) *ImageBuffer {
+	return FromImage(p.ToImage(tileSize))
+}
+
 func (p Palette) ClosestTo(original Pixel) Pixel {
 	min := math.MaxInt32
 	result := original

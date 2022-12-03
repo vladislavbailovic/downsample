@@ -1,6 +1,9 @@
 package main
 
-import "testing"
+import (
+	"path/filepath"
+	"testing"
+)
 
 func Test_drawSquare_Center(t *testing.T) {
 	raw := []int32{
@@ -67,7 +70,7 @@ func Test_drawSquare_Partial(t *testing.T) {
 }
 
 func Test_FromJPEG(t *testing.T) {
-	bfr := FromJPEG("red.jpg")
+	bfr := FromJPEG(filepath.Join("testdata", "red.jpg"))
 
 	if bfr.width != 50 {
 		t.Errorf("unexpected width: %d", bfr.width)
@@ -89,7 +92,7 @@ func Test_FromJPEG(t *testing.T) {
 }
 
 func Test_Palette(t *testing.T) {
-	bfr := FromJPEG("sample.jpg")
+	bfr := FromJPEG(filepath.Join("testdata", "sample.jpg"))
 	p := bfr.Palette(8)
 	if len(p) != 8 {
 		t.Errorf("unexpected palette length: %d", len(p))

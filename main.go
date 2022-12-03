@@ -1,10 +1,7 @@
 package main
 
 import (
-	"fmt"
-	"image"
-	"image/jpeg"
-	"os"
+	"path/filepath"
 )
 
 var squareSize int = 40
@@ -31,16 +28,18 @@ func main() {
 
 func printPaletteImage(p Palette) {
 	if len(p) == 0 {
-		bfr := FromJPEG("sample.jpg")
+		file := filepath.Join("testdata", "sample.jpg")
+		bfr := FromJPEG(file)
 		p = bfr.Palette(8)
 	}
 
-	edit := p.ToImage(50)
-	printImage(edit)
+	edit := p.ToImageBuffer(50)
+	edit.ToJPEGFile("out.jpg")
 }
 
 func printAveragedImage(palette Palette) {
-	bfr := FromJPEG("sample.jpg")
+	file := filepath.Join("testdata", "sample.jpg")
+	bfr := FromJPEG(file)
 	if len(palette) == 0 {
 		palette = bfr.Palette(24) // from image itself
 	}
@@ -87,11 +86,12 @@ func printAveragedImage(palette Palette) {
 		width:  bfr.width,
 		height: bfr.height,
 		pixels: edit}
-	printImage(b2.ToImage())
+	b2.ToJPEGFile("out.jpg")
 }
 
 func printHarsherPixelatedImage() {
-	bfr := FromJPEG("sample.jpg")
+	file := filepath.Join("testdata", "sample.jpg")
+	bfr := FromJPEG(file)
 	square := squareSize
 	edit := make([]*Pixel, len(bfr.pixels))
 
@@ -134,11 +134,12 @@ func printHarsherPixelatedImage() {
 		width:  bfr.width,
 		height: bfr.height,
 		pixels: edit}
-	printImage(b2.ToImage())
+	b2.ToJPEGFile("out.jpg")
 }
 
 func printPixelatedImage() {
-	bfr := FromJPEG("sample.jpg")
+	file := filepath.Join("testdata", "sample.jpg")
+	bfr := FromJPEG(file)
 	square := squareSize
 	edit := make([]*Pixel, len(bfr.pixels))
 
@@ -164,20 +165,5 @@ func printPixelatedImage() {
 		width:  bfr.width,
 		height: bfr.height,
 		pixels: edit}
-	printImage(b2.ToImage())
-}
-
-func printImage(edit image.Image) {
-	writer, err := os.Create("out.jpg")
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "could not open output file: %v", err)
-		return
-	}
-	defer writer.Close()
-
-	if err := jpeg.Encode(writer, edit, nil); err != nil {
-		fmt.Fprintf(os.Stderr, "could not write output file: %v", err)
-		return
-	}
-	fmt.Println("yo")
+	b2.ToJPEGFile("out.jpg")
 }
