@@ -5,7 +5,6 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
-	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -80,47 +79,13 @@ func (b *ImageBuffer) ToImage() image.Image {
 	return img
 }
 
-type Palette []Pixel
-
 func (b *ImageBuffer) Palette(size uint8) Palette {
 	return normalizeColors_RGBA(b.pixels, size)
 }
 
-func (p Palette) ToImage(tileSize int) image.Image {
-	img := image.NewRGBA(image.Rect(
-		0, 0, tileSize*len(p), tileSize))
+// --------------------
 
-	for pos := 0; pos < len(p); pos++ {
-		c := p[pos]
-		for y := 0; y < tileSize; y++ {
-			for x := 0; x < tileSize; x++ {
-				img.Set(
-					(pos*tileSize)+x,
-					y,
-					color.RGBA{c.R, c.G, c.B, 1})
-			}
-		}
-	}
-	return img
-}
-
-func (p Palette) ClosestTo(original Pixel) Pixel {
-	min := math.MaxInt32
-	result := original
-	for _, px := range p {
-
-		tmp := math.Abs(float64(px.R) - float64(original.R))
-		tmp += math.Abs(float64(px.G) - float64(original.G))
-		tmp += math.Abs(float64(px.B) - float64(original.B))
-
-		if int(tmp) < min {
-			min = int(tmp)
-			result = px
-		}
-	}
-	return result
-}
-
+// TODO: improve this
 func normalizeColors_RGBA(pxl []*Pixel, size uint8) Palette {
 	c := map[int32]int{}
 	for _, p := range pxl {
