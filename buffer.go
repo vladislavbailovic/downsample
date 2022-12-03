@@ -104,10 +104,10 @@ func (p Palette) ToImage(tileSize int) image.Image {
 	return img
 }
 
-func getClosestColor(palette []Pixel, original Pixel) Pixel {
+func (p Palette) ClosestTo(original Pixel) Pixel {
 	min := math.MaxInt32
 	result := original
-	for _, px := range palette {
+	for _, px := range p {
 
 		tmp := math.Abs(float64(px.R) - float64(original.R))
 		tmp += math.Abs(float64(px.G) - float64(original.G))
