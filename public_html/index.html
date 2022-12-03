@@ -1,0 +1,31 @@
+<html>  
+	<head>
+		<meta charset="utf-8"/>
+		<script src="assets/wasm_exec.js"></script>
+		<script>
+			const go = new Go();
+			WebAssembly.instantiateStreaming(fetch("assets/downsample.wasm"), go.importObject).then((result) => {
+				console.log(result)
+				go.run(result.instance);
+			});
+		</script>
+	</head>
+	<body>
+
+<div class="interface">
+	<div class="controls">
+		<select id="algo">
+			<option value="pixelate">Pixelate</option>
+			<option value="normalize">... and normalize</option>
+			<option value="average">Average</option>
+		</select>
+	</div>
+	<div class="io">
+		<img id="input-file" src="sample.jpg" />
+		<canvas id="output"></canvas>
+	</div>
+</div>
+
+<script src="assets/downsample.js"></script>
+	</body>
+</html> 

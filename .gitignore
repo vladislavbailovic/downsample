@@ -2,3 +2,5 @@ coverage.*
 *.jpg
 *.old
 /index.html
+public_html/assets/*.wasm
+public_html/assets/wasm_exec.js

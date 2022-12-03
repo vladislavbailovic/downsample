@@ -14,6 +14,10 @@ type ImageBuffer struct {
 	pixels        []*Pixel
 }
 
+func NewImageBuffer(width, height int, pixels []*Pixel) *ImageBuffer {
+	return &ImageBuffer{width: width, height: height, pixels: pixels}
+}
+
 func FromJPEG(imgfile string) *ImageBuffer {
 	fp, err := os.Open(imgfile)
 	if err != nil {
@@ -49,6 +53,10 @@ func FromImage(img image.Image) *ImageBuffer {
 		width:  bounds.Max.X,
 		height: bounds.Max.Y,
 		pixels: bfr}
+}
+
+func (b *ImageBuffer) Pixels() []*Pixel {
+	return b.pixels
 }
 
 func (b *ImageBuffer) drawSquare(
