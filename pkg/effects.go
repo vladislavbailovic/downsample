@@ -2,6 +2,14 @@ package pkg
 
 var squareSize int = 25
 
+func GetTileSize() int {
+	return squareSize
+}
+
+func SetTileSize(newSize int) {
+	squareSize = newSize
+}
+
 type pixelateMode byte
 
 const (

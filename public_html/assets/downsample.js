@@ -38,6 +38,9 @@ const render = algo => {
 }
 
 const updateInterface = algo => {
+	const tile = document.querySelector(".tile-size input");
+	tile.value = getTileSize();
+
 	const palette = document.querySelector(".palette");
 	if (algo != "average") {
 		palette.style.display = "none";
@@ -73,9 +76,19 @@ const init = () => {
 		render(algo.value);
 	});
 
+	const tile = document.querySelector(".tile-size input");
+	tile.addEventListener("change", e => {
+		const tileSize = parseInt(tile.value, 10);
+		if (!tileSize) {
+			return;
+		}
+		setTileSize(tileSize)
+		rerender()
+	});
+
 	document.addEventListener("change", e => {
 		if (e.target.nodeName == "INPUT" && e.target.closest(".color")) {
-			rerender();
+			return rerender();
 		}
 	});
 

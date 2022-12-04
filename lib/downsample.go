@@ -91,11 +91,35 @@ func averageWrapper(done chan bool) js.Func {
 	})
 }
 
+func tileSizeSetterWrapper(done chan bool) js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) any {
+		if len(args) < 1 {
+			return false
+		}
+
+		newSize := args[0].Int()
+		if newSize == 0 {
+			return false
+		}
+
+		pkg.SetTileSize(newSize)
+		return true
+	})
+}
+
+func tileSizeGetterWrapper(done chan bool) js.Func {
+	return js.FuncOf(func(this js.Value, args []js.Value) any {
+		return pkg.GetTileSize()
+	})
+}
+
 func main() {
 	done := make(chan bool)
 	js.Global().Set("pixelate", pixelateWrapper(done))
 	js.Global().Set("normalize", normalizeWrapper(done))
 	js.Global().Set("average", averageWrapper(done))
+	js.Global().Set("setTileSize", tileSizeSetterWrapper(done))
+	js.Global().Set("getTileSize", tileSizeGetterWrapper(done))
 	for {
 		select {
 		case <-done:
