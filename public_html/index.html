@@ -23,14 +23,9 @@
 .palette .color {
 	width: 6em;
 }
-.palette .color input {
-	width: 100%;
-}
-.palette .color:before {
-	display: block;
-	width: 6em;
-	height: 30px;
-	content: ' ';
+.palette .color .control {
+	display: flex;
+
 }
 </style>
 	</head>
@@ -51,9 +46,24 @@
 		</label>
 
 		<div class="palette">
-			<div class="color"> <input type="colorpicker" class="color" value="#ffb703" /> </div>
-			<div class="color"> <input type="colorpicker" class="color" value="#fb8500" /> </div>
-			<div class="color"> <input type="colorpicker" class="color" value="#8ecae6" /> </div>
+			<div class="color">
+				<div class="control">
+					<input type="color" class="color" value="#ffb703" />
+					<button>x</button>
+				</div>
+			</div>
+			<div class="color">
+				<div class="control">
+					<input type="color" class="color" value="#fb8500" />
+					<button>x</button>
+				</div>
+			</div>
+			<div class="color">
+				<div class="control">
+					<input type="color" class="color" value="#8ecae6" />
+					<button>x</button>
+				</div>
+			</div>
 			<button class="add">Add</button>
 		</div>
 

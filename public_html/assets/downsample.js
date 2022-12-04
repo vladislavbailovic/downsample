@@ -92,6 +92,13 @@ const init = () => {
 		}
 	});
 
+	document.addEventListener("click", e => {
+		if (e.target.nodeName == "BUTTON" && e.target.closest(".color")) {
+			e.target.closest(".color").remove();
+			rerender();
+		}
+	});
+
 	render();
 }
 
