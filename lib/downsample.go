@@ -120,6 +120,9 @@ func main() {
 	js.Global().Set("average", averageWrapper(done))
 	js.Global().Set("setTileSize", tileSizeSetterWrapper(done))
 	js.Global().Set("getTileSize", tileSizeGetterWrapper(done))
+
+	initGui()
+
 	for {
 		select {
 		case <-done:

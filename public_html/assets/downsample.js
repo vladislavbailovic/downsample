@@ -62,11 +62,14 @@ const rerender = () => {
 }
 
 const init = () => {
+	/*
 	const algo = document.getElementById("algo")
 	algo.addEventListener("change", e => {
 		render(algo.value)
 	});
+	*/
 
+	/*
 	const add = document.querySelector(".palette .add");
 	add.addEventListener("click", e => {
 		const palette = document.querySelector(".palette");
@@ -75,7 +78,9 @@ const init = () => {
 		add.before(clr);
 		render(algo.value);
 	});
+	*/
 
+	/*
 	const tile = document.querySelector(".tile-size input");
 	tile.addEventListener("change", e => {
 		const tileSize = parseInt(tile.value, 10);
@@ -85,19 +90,24 @@ const init = () => {
 		setTileSize(tileSize)
 		rerender()
 	});
+	*/
 
+	/*
 	document.addEventListener("change", e => {
 		if (e.target.nodeName == "INPUT" && e.target.closest(".color")) {
 			return rerender();
 		}
 	});
+	*/
 
+	/*
 	document.addEventListener("click", e => {
 		if (e.target.nodeName == "BUTTON" && e.target.closest(".color")) {
 			e.target.closest(".color").remove();
 			rerender();
 		}
 	});
+	*/
 
 	render();
 }

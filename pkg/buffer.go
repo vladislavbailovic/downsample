@@ -59,6 +59,9 @@ func (b *ImageBuffer) Pixels() []*Pixel {
 	return b.pixels
 }
 
+func (b *ImageBuffer) Width() int  { return b.width }
+func (b *ImageBuffer) Height() int { return b.height }
+
 func (b *ImageBuffer) drawSquare(
 	x, y, width, height int, color Pixel) error {
 
