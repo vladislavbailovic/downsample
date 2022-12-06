@@ -299,6 +299,53 @@ func (x *tileElement) Create(document js.Value) js.Value {
 	return w
 }
 
+type algoElement struct {
+	algorithm string
+	wrapper   htmlElement
+}
+
+func NewAlgo(algorithm string) *algoElement {
+	return &algoElement{
+		algorithm: algorithm,
+		wrapper: htmlElement{
+			tag: htmlTag("select"),
+			id:  htmlAttributeValue("algo"),
+		},
+	}
+}
+
+func (x *algoElement) Create(document js.Value) js.Value {
+	x.wrapper.Listen("change", func() bool {
+		x.algorithm = x.wrapper.ref.Get("value").String()
+		fireEvent("downsample:ui", document)
+		fireEvent("downsample:render", document)
+		return true
+	})
+	w := x.wrapper.Create(document)
+
+	algos := []string{
+		"pixelate",
+		"normalize",
+		"average",
+	}
+	for _, a := range algos {
+		el := htmlElement{
+			tag: htmlTag("option"),
+			params: map[htmlAttributeName]htmlAttributeValue{
+				"value": htmlAttributeValue(a),
+			},
+			text: htmlInnerText(a),
+		}
+		w.Call("append", el.Create(document))
+	}
+
+	return w
+}
+
+func (x *algoElement) GetAlgorithm() string {
+	return x.algorithm
+}
+
 func fireEvent(name string, document js.Value) {
 	ev := js.Global().Get("Event").New(name)
 	document.Call("dispatchEvent", ev)
