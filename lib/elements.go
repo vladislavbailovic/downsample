@@ -338,12 +338,16 @@ func (x *algoElement) Create(document js.Value) js.Value {
 		"average",
 	}
 	for _, a := range algos {
+		opts := map[htmlAttributeName]htmlAttributeValue{
+			"value": htmlAttributeValue(a),
+		}
+		if a == x.algorithm {
+			opts["selected"] = "selected"
+		}
 		el := htmlElement{
-			tag: htmlTag("option"),
-			params: map[htmlAttributeName]htmlAttributeValue{
-				"value": htmlAttributeValue(a),
-			},
-			text: htmlInnerText(a),
+			tag:    htmlTag("option"),
+			params: opts,
+			text:   htmlInnerText(a),
 		}
 		w.Call("append", el.Create(document))
 	}
