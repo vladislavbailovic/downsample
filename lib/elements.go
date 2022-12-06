@@ -106,6 +106,20 @@ func (x *htmlElement) Trigger(event string) {
 	fireEvent(event, x.ref)
 }
 
+func (x *htmlElement) Show() {
+	if x.ref.IsUndefined() {
+		return
+	}
+	x.ref.Get("style").Set("display", "block")
+}
+
+func (x *htmlElement) Hide() {
+	if x.ref.IsUndefined() {
+		return
+	}
+	x.ref.Get("style").Set("display", "none")
+}
+
 type colorElement struct {
 	color   pkg.Pixel
 	wrapper htmlElement
@@ -210,6 +224,13 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 	return w
 }
 
+func (x *paletteElement) Hide() {
+	x.wrapper.Hide()
+}
+func (x *paletteElement) Show() {
+	x.wrapper.ref.Get("style").Set("display", "flex")
+}
+
 func (x *paletteElement) addColor(clr int32) {
 	x.palette = append(x.palette, pkg.PixelFromInt32(clr))
 }
@@ -239,7 +260,8 @@ func NewTileSize(size int) *tileElement {
 	return &tileElement{
 		size: size,
 		wrapper: htmlElement{
-			tag: htmlTag("label"),
+			tag:     htmlTag("label"),
+			classes: []htmlAttributeValue{"tile-size"},
 		},
 		input: htmlElement{
 			tag: htmlTag("input"),

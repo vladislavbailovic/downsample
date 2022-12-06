@@ -108,15 +108,17 @@ func render(algo string, doc js.Value) {
 }
 
 func updateInterface(algo string, doc js.Value) {
-	tile := doc.Call("querySelector", elTileSize)
-	tile.Set("value", pkg.GetTileSize())
+	/*
+		tile := doc.Call("querySelector", elTileSize)
+		tile.Set("value", pkg.GetTileSize())
 
-	palette := doc.Call("querySelector", elPalette)
-	if algo != "average" {
-		palette.Get("style").Set("display", "none")
-		return
-	}
-	palette.Get("style").Set("display", "flex")
+		palette := doc.Call("querySelector", elPalette)
+		if algo != "average" {
+			palette.Get("style").Set("display", "none")
+			return
+		}
+		palette.Get("style").Set("display", "flex")
+	*/
 }
 
 func rerender(doc js.Value) {
@@ -127,29 +129,11 @@ func rerender(doc js.Value) {
 func initGui() {
 	doc := js.Global().Get("document")
 
-	doc.Call("addEventListener", "change", js.FuncOf(
-		func(this js.Value, args []js.Value) interface{} {
-			tgt := args[0].Get("target")
-			if tgt.Get("nodeName").String() != "INPUT" {
-				return false
-			}
-
-			closest := tgt.Call("closest", elsColor)
-			if !closest.Truthy() {
-				return false
-			}
-
-			rerender(doc)
-
-			return true
-		}),
-	)
-
 	/*
-		doc.Call("addEventListener", "click", js.FuncOf(
+		doc.Call("addEventListener", "change", js.FuncOf(
 			func(this js.Value, args []js.Value) interface{} {
 				tgt := args[0].Get("target")
-				if tgt.Get("nodeName").String() != "BUTTON" {
+				if tgt.Get("nodeName").String() != "INPUT" {
 					return false
 				}
 
@@ -158,12 +142,30 @@ func initGui() {
 					return false
 				}
 
-				closest.Call("remove")
 				rerender(doc)
 
 				return true
 			}),
 		)
+
+			doc.Call("addEventListener", "click", js.FuncOf(
+				func(this js.Value, args []js.Value) interface{} {
+					tgt := args[0].Get("target")
+					if tgt.Get("nodeName").String() != "BUTTON" {
+						return false
+					}
+
+					closest := tgt.Call("closest", elsColor)
+					if !closest.Truthy() {
+						return false
+					}
+
+					closest.Call("remove")
+					rerender(doc)
+
+					return true
+				}),
+			)
 	*/
 
 	algo := doc.Call("getElementById", elAlgo)
@@ -231,10 +233,16 @@ func initGui() {
 
 	doc.Call("addEventListener", "downsample:ui", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
+			fmt.Println("updating")
 			update()
 
 			pkg.SetTileSize(tile.size)
 			palette = plt.GetPalette()
+			if algo.Get("value").String() != "average" {
+				plt.Hide()
+			} else {
+				plt.Show()
+			}
 
 			return true
 		},
