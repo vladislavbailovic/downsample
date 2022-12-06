@@ -92,7 +92,6 @@ func render(algo string, doc js.Value) {
 	switch algo {
 	case "average":
 		palette := getPalette(doc)
-		fmt.Println(palette)
 		b2 := pkg.ConstrainImage(img, palette)
 		renderImageBuffer(b2, doc)
 	case "normalize":
@@ -129,7 +128,7 @@ func initGui() {
 	doc := js.Global().Get("document")
 
 	doc.Call("addEventListener", "change", js.FuncOf(
-		func(this js.Value, args []js.Value) any {
+		func(this js.Value, args []js.Value) interface{} {
 			tgt := args[0].Get("target")
 			if tgt.Get("nodeName").String() != "INPUT" {
 				return false
@@ -146,59 +145,109 @@ func initGui() {
 		}),
 	)
 
-	doc.Call("addEventListener", "click", js.FuncOf(
-		func(this js.Value, args []js.Value) any {
-			tgt := args[0].Get("target")
-			if tgt.Get("nodeName").String() != "BUTTON" {
-				return false
-			}
+	/*
+		doc.Call("addEventListener", "click", js.FuncOf(
+			func(this js.Value, args []js.Value) interface{} {
+				tgt := args[0].Get("target")
+				if tgt.Get("nodeName").String() != "BUTTON" {
+					return false
+				}
 
-			closest := tgt.Call("closest", elsColor)
-			if !closest.Truthy() {
-				return false
-			}
+				closest := tgt.Call("closest", elsColor)
+				if !closest.Truthy() {
+					return false
+				}
 
-			closest.Call("remove")
-			rerender(doc)
+				closest.Call("remove")
+				rerender(doc)
 
-			return true
-		}),
-	)
+				return true
+			}),
+		)
+	*/
 
 	algo := doc.Call("getElementById", elAlgo)
 	algo.Call("addEventListener", "change", js.FuncOf(
-		func(this js.Value, args []js.Value) any {
+		func(this js.Value, args []js.Value) interface{} {
 			rerender(doc)
 			return true
 		},
 	))
 
-	tile := doc.Call("querySelector", elTileSize)
-	tile.Call("addEventListener", "change", js.FuncOf(
-		func(this js.Value, args []js.Value) any {
-			tileSize := 0
-			raw := tile.Get("value").String()
-			if ts, err := strconv.Atoi(raw); err == nil {
-				tileSize = ts
-			}
-			if tileSize == 0 {
-				return false
-			}
-			pkg.SetTileSize(tileSize)
-			rerender(doc)
-			return true
-		},
-	))
+	/*
+		tile := doc.Call("querySelector", elTileSize)
+		tile.Call("addEventListener", "change", js.FuncOf(
+			func(this js.Value, args []js.Value) interface{} {
+				tileSize := 0
+				raw := tile.Get("value").String()
+				if ts, err := strconv.Atoi(raw); err == nil {
+					tileSize = ts
+				}
+				if tileSize == 0 {
+					return false
+				}
+				pkg.SetTileSize(tileSize)
+				rerender(doc)
+				return true
+			},
+		))
 
-	add := doc.Call("querySelector", elAddColor)
-	add.Call("addEventListener", "click", js.FuncOf(
-		func(this js.Value, args []js.Value) any {
-			palette := doc.Call("querySelector", elPalette)
-			clr := palette.Call("querySelector", elsColor).
-				Call("cloneNode", true)
-			add.Call("before", clr)
+			add := doc.Call("querySelector", elAddColor)
+			add.Call("addEventListener", "click", js.FuncOf(
+				func(this js.Value, args []js.Value) interface{} {
+					palette := doc.Call("querySelector", elPalette)
+					clr := palette.Call("querySelector", elsColor).
+						Call("cloneNode", true)
+					add.Call("before", clr)
+					rerender(doc)
+					return true
+				},
+			))
+	*/
+
+	palette := pkg.Palette{
+		pkg.PixelFromInt32(0xbada55),
+		pkg.PixelFromInt32(0x0dead0),
+	}
+
+	body := doc.Call("querySelector", "body")
+
+	plt := NewPalette(palette)
+	tile := NewTileSize(pkg.GetTileSize())
+	elements := []struct {
+		src creatable
+		el  js.Value
+	}{
+		{src: plt, el: plt.Create(doc)},
+		{src: tile, el: tile.Create(doc)},
+	}
+
+	update := func() {
+		for _, item := range elements {
+			item.el = item.src.Create(doc)
+			body.Call("append", item.el)
+		}
+	}
+
+	doc.Call("addEventListener", "downsample:ui", js.FuncOf(
+		func(this js.Value, args []js.Value) interface{} {
+			update()
+
+			pkg.SetTileSize(tile.size)
+			palette = plt.GetPalette()
+
+			return true
+		},
+	))
+	doc.Call("addEventListener", "downsample:render", js.FuncOf(
+		func(this js.Value, args []js.Value) interface{} {
 			rerender(doc)
 			return true
 		},
 	))
+	update()
+}
+
+type creatable interface {
+	Create(js.Value) js.Value
 }

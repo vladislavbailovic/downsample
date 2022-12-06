@@ -41,7 +41,7 @@ func jsToImageBuffer(args []js.Value, done chan bool) *pkg.ImageBuffer {
 	return img
 }
 
-func imageBufferToJs(pixels []*pkg.Pixel) any {
+func imageBufferToJs(pixels []*pkg.Pixel) interface{} {
 	result := make([]byte, 0, len(pixels)*4)
 	for _, p := range pixels {
 		result = append(result, p.R)
@@ -56,7 +56,7 @@ func imageBufferToJs(pixels []*pkg.Pixel) any {
 }
 
 func pixelateWrapper(done chan bool) js.Func {
-	return js.FuncOf(func(this js.Value, args []js.Value) any {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		img := jsToImageBuffer(args, done)
 		b2 := pkg.PixelateImage(img, pkg.ModePixelate).Pixels()
 		return imageBufferToJs(b2)
@@ -64,7 +64,7 @@ func pixelateWrapper(done chan bool) js.Func {
 }
 
 func normalizeWrapper(done chan bool) js.Func {
-	return js.FuncOf(func(this js.Value, args []js.Value) any {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		img := jsToImageBuffer(args, done)
 		b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize).Pixels()
 		return imageBufferToJs(b2)
@@ -81,7 +81,7 @@ func parsePalette(raw js.Value) pkg.Palette {
 
 func averageWrapper(done chan bool) js.Func {
 	palette := []pkg.Pixel{}
-	return js.FuncOf(func(this js.Value, args []js.Value) any {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		img := jsToImageBuffer(args, done)
 		if len(args) > 3 {
 			palette = parsePalette(args[3])
@@ -92,7 +92,7 @@ func averageWrapper(done chan bool) js.Func {
 }
 
 func tileSizeSetterWrapper(done chan bool) js.Func {
-	return js.FuncOf(func(this js.Value, args []js.Value) any {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		if len(args) < 1 {
 			return false
 		}
@@ -108,7 +108,7 @@ func tileSizeSetterWrapper(done chan bool) js.Func {
 }
 
 func tileSizeGetterWrapper(done chan bool) js.Func {
-	return js.FuncOf(func(this js.Value, args []js.Value) any {
+	return js.FuncOf(func(this js.Value, args []js.Value) interface{} {
 		return pkg.GetTileSize()
 	})
 }
