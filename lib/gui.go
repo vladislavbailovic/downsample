@@ -3,7 +3,6 @@ package main
 import (
 	"downsample/pkg"
 	"fmt"
-	"strconv"
 	"syscall/js"
 )
 
@@ -73,136 +72,8 @@ func renderImageBuffer(img *pkg.ImageBuffer, doc js.Value) {
 	otx.Call("putImageData", data, 0, 0)
 }
 
-func getPalette(doc js.Value) pkg.Palette {
-	raw := doc.Call("querySelectorAll", elsColorValues)
-	p := make([]pkg.Pixel, 0, raw.Length())
-	for i := 0; i < raw.Length(); i++ {
-		color := raw.Index(i).Get("value").String()[1:]
-		if intval, err := strconv.ParseInt(color, 16, 32); err == nil {
-			px := pkg.PixelFromInt32(int32(intval))
-			p = append(p, px)
-
-		}
-	}
-	return p
-}
-
-func render(algo string, doc js.Value) {
-	img := getSource(doc)
-	switch algo {
-	case "average":
-		palette := getPalette(doc)
-		b2 := pkg.ConstrainImage(img, palette)
-		renderImageBuffer(b2, doc)
-	case "normalize":
-		b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize)
-		renderImageBuffer(b2, doc)
-	case "pixelate":
-		b2 := pkg.PixelateImage(img, pkg.ModePixelate)
-		renderImageBuffer(b2, doc)
-	default:
-		fmt.Println("ignoring the unknown algo", algo)
-		renderImageBuffer(img, doc)
-	}
-}
-
-/*
-func updateInterface(algo string, doc js.Value) {
-		tile := doc.Call("querySelector", elTileSize)
-		tile.Set("value", pkg.GetTileSize())
-
-		palette := doc.Call("querySelector", elPalette)
-		if algo != "average" {
-			palette.Get("style").Set("display", "none")
-			return
-		}
-		palette.Get("style").Set("display", "flex")
-}
-
-func rerender(doc js.Value) {
-	algo := doc.Call("getElementById", elAlgo)
-	render(algo.Get("value").String(), doc)
-}
-*/
-
 func initGui() {
 	doc := js.Global().Get("document")
-
-	/*
-			doc.Call("addEventListener", "change", js.FuncOf(
-				func(this js.Value, args []js.Value) interface{} {
-					tgt := args[0].Get("target")
-					if tgt.Get("nodeName").String() != "INPUT" {
-						return false
-					}
-
-					closest := tgt.Call("closest", elsColor)
-					if !closest.Truthy() {
-						return false
-					}
-
-					rerender(doc)
-
-					return true
-				}),
-			)
-
-				doc.Call("addEventListener", "click", js.FuncOf(
-					func(this js.Value, args []js.Value) interface{} {
-						tgt := args[0].Get("target")
-						if tgt.Get("nodeName").String() != "BUTTON" {
-							return false
-						}
-
-						closest := tgt.Call("closest", elsColor)
-						if !closest.Truthy() {
-							return false
-						}
-
-						closest.Call("remove")
-						rerender(doc)
-
-						return true
-					}),
-				)
-
-		algo := doc.Call("getElementById", elAlgo)
-		algo.Call("addEventListener", "change", js.FuncOf(
-			func(this js.Value, args []js.Value) interface{} {
-				rerender(doc)
-				return true
-			},
-		))
-
-			tile := doc.Call("querySelector", elTileSize)
-			tile.Call("addEventListener", "change", js.FuncOf(
-				func(this js.Value, args []js.Value) interface{} {
-					tileSize := 0
-					raw := tile.Get("value").String()
-					if ts, err := strconv.Atoi(raw); err == nil {
-						tileSize = ts
-					}
-					if tileSize == 0 {
-						return false
-					}
-					pkg.SetTileSize(tileSize)
-					rerender(doc)
-					return true
-				},
-			))
-
-				add := doc.Call("querySelector", elAddColor)
-				add.Call("addEventListener", "click", js.FuncOf(
-					func(this js.Value, args []js.Value) interface{} {
-						palette := doc.Call("querySelector", elPalette)
-						clr := palette.Call("querySelector", elsColor).
-							Call("cloneNode", true)
-						add.Call("before", clr)
-						rerender(doc)
-						return true
-					},
-				))
-	*/
 
 	palette := pkg.Palette{
 		pkg.PixelFromInt32(0xbada55),
@@ -230,6 +101,24 @@ func initGui() {
 		}
 	}
 
+	render := func() {
+		img := getSource(doc)
+		switch algorithm {
+		case "average":
+			b2 := pkg.ConstrainImage(img, palette)
+			renderImageBuffer(b2, doc)
+		case "normalize":
+			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize)
+			renderImageBuffer(b2, doc)
+		case "pixelate":
+			b2 := pkg.PixelateImage(img, pkg.ModePixelate)
+			renderImageBuffer(b2, doc)
+		default:
+			fmt.Println("ignoring the unknown algo", algo)
+			renderImageBuffer(img, doc)
+		}
+	}
+
 	doc.Call("addEventListener", "downsample:ui", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
 			update()
@@ -243,12 +132,13 @@ func initGui() {
 				plt.Show()
 			}
 
+			render()
 			return true
 		},
 	))
 	doc.Call("addEventListener", "downsample:render", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
-			render(algorithm, doc)
+			render()
 			return true
 		},
 	))

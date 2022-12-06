@@ -128,8 +128,8 @@ type colorElement struct {
 	remove  htmlElement
 }
 
-func NewColor(color pkg.Pixel) colorElement {
-	return colorElement{
+func NewColor(color pkg.Pixel) *colorElement {
+	return &colorElement{
 		color: color,
 		wrapper: htmlElement{
 			tag:     htmlTag("div"),
@@ -154,19 +154,24 @@ func NewColor(color pkg.Pixel) colorElement {
 	}
 }
 
-func (x colorElement) Create(document js.Value) js.Value {
+func (x *colorElement) Create(document js.Value) js.Value {
 	w := x.wrapper.Create(document)
 	c := x.control.Create(document)
 
 	x.input.Listen("change", func() bool {
-		fireEvent("downsample:render", document)
+		cs := x.input.ref.Get("value").String()[1:]
+		if clr, err := strconv.ParseInt(cs, 16, 32); err == nil {
+			x.color = pkg.PixelFromInt32(int32(clr))
+			x.wrapper.Trigger("color:change")
+		} else {
+			fmt.Println("error parsing new color", cs, err)
+		}
 		return true
 	})
 	i := x.input.Create(document)
 
 	x.remove.Listen("click", func() bool {
 		x.wrapper.Trigger("color:remove")
-		fireEvent("downsample:render", document)
 		return true
 	})
 	r := x.remove.Create(document)
@@ -207,6 +212,12 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 		color := NewColor(c)
 		color.wrapper.Listen("color:remove", func() bool {
 			x.removeColor(color.color)
+			fireEvent("downsample:ui", document)
+			return true
+		})
+		color.wrapper.Listen("color:change", func() bool {
+			x.removeColor(c)
+			x.addColor(color.color.Hex())
 			fireEvent("downsample:ui", document)
 			return true
 		})
@@ -289,7 +300,6 @@ func (x *tileElement) Create(document js.Value) js.Value {
 			} else {
 				x.size = s
 				fireEvent("downsample:ui", document)
-				fireEvent("downsample:render", document)
 			}
 			return true
 		},
@@ -318,7 +328,6 @@ func (x *algoElement) Create(document js.Value) js.Value {
 	x.wrapper.Listen("change", func() bool {
 		x.algorithm = x.wrapper.ref.Get("value").String()
 		fireEvent("downsample:ui", document)
-		fireEvent("downsample:render", document)
 		return true
 	})
 	w := x.wrapper.Create(document)
