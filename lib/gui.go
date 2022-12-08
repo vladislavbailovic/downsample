@@ -81,6 +81,7 @@ func initGui() {
 	}
 	algorithm := "pixelate"
 	body := doc.Call("querySelector", "body")
+	img := getSource(doc)
 
 	algo := NewAlgo(algorithm)
 	plt := NewPalette(palette)
@@ -102,7 +103,6 @@ func initGui() {
 	}
 
 	render := func() {
-		img := getSource(doc)
 		switch algorithm {
 		case "average":
 			b2 := pkg.ConstrainImage(img, palette)
@@ -126,6 +126,7 @@ func initGui() {
 			algorithm = algo.GetAlgorithm()
 			pkg.SetTileSize(tile.size)
 			palette = plt.GetPalette()
+
 			if algorithm != "average" {
 				plt.Hide()
 			} else {
@@ -142,7 +143,8 @@ func initGui() {
 			return true
 		},
 	))
-	update()
+
+	fireEvent("downsample:ui", doc)
 }
 
 type creatable interface {
