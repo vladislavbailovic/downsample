@@ -361,3 +361,16 @@ var Output htmlElement = htmlElement{
 	id:  htmlAttributeValue(elOutput),
 	tag: htmlTag("canvas"),
 }
+
+var Root htmlElement = htmlElement{
+	tag:     htmlTag("div"),
+	classes: []htmlAttributeValue{"interface"},
+}
+var Controls htmlElement = htmlElement{
+	tag:     htmlTag("div"),
+	classes: []htmlAttributeValue{"controls"},
+}
+var Io htmlElement = htmlElement{
+	tag:     htmlTag("div"),
+	classes: []htmlAttributeValue{"io"},
+}

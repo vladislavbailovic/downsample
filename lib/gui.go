@@ -69,9 +69,10 @@ func renderImageBuffer(img *pkg.ImageBuffer, doc js.Value) {
 type uiKind byte
 
 const (
-	uiControl uiKind = iota
-	uiInput   uiKind = iota
-	uiOutput  uiKind = iota
+	uiStructure uiKind = iota
+	uiControl   uiKind = iota
+	uiInput     uiKind = iota
+	uiOutput    uiKind = iota
 )
 
 func initGui() {
@@ -84,8 +85,12 @@ func initGui() {
 	}
 	algorithm := "pixelate"
 
-	controls := doc.Call("querySelector", ".interface .controls")
-	io := doc.Call("querySelector", ".interface .io")
+	root := Root.Create(doc)
+	controls := Controls.Create(doc)
+	io := Io.Create(doc)
+	root.Call("append", controls)
+	root.Call("append", io)
+	doc.Call("querySelector", "body>div").Call("replaceWith", root)
 
 	algo := NewAlgo(algorithm)
 	plt := NewPalette(palette)
