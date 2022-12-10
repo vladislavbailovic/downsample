@@ -7,21 +7,15 @@ import (
 )
 
 const (
-	elInput        string = "input-file"
-	elOutput       string = "output"
-	elAlgo         string = "algo"
-	elPalette      string = ".palette"
-	elTileSize     string = ".tile-size input"
-	elAddColor     string = ".palette .add"
-	elsColor       string = ".color"
-	elsColorValues string = ".palette input"
+	elInput  htmlAttributeValue = "input-file"
+	elOutput htmlAttributeValue = "output"
 )
 
 func getSource(doc js.Value) *pkg.ImageBuffer {
 	data := doc.Call("createElement", "canvas")
 	ctx := data.Call("getContext", "2d")
 
-	input := doc.Call("getElementById", elInput)
+	input := doc.Call("getElementById", elInput.String())
 	width := input.Get("width").Int()
 	height := input.Get("height").Int()
 
@@ -50,7 +44,7 @@ func getSource(doc js.Value) *pkg.ImageBuffer {
 }
 
 func renderImageBuffer(img *pkg.ImageBuffer, doc js.Value) {
-	out := doc.Call("getElementById", elOutput)
+	out := doc.Call("getElementById", elOutput.String())
 	out.Set("width", img.Width())
 	out.Set("height", img.Height())
 
