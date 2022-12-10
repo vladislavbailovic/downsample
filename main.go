@@ -2,52 +2,56 @@ package main
 
 import (
 	"downsample/pkg"
+	"image"
+	"image/color"
+	"image/jpeg"
+	"os"
 	"path/filepath"
 )
 
 func main() {
-	palette := []pkg.Pixel{
-		pkg.PixelFromInt32(0xffb703),
-		pkg.PixelFromInt32(0xfb8500),
-		pkg.PixelFromInt32(0xd00000),
-		pkg.PixelFromInt32(0x8ecae6),
-		pkg.PixelFromInt32(0x023047),
-		pkg.PixelFromInt32(0x124057),
-		pkg.PixelFromInt32(0x225068),
-		pkg.PixelFromInt32(0x219ebc),
-		pkg.PixelFromInt32(0x2a9d8f),
-		pkg.PixelFromInt32(0xccc5b9),
+	palette := []color.Color{
+		color.RGBA{R: 0xFF, G: 0xB7, B: 0x03, A: 0xFF},
+		color.RGBA{R: 0xFB, G: 0x85, B: 0x00, A: 0xFF},
+		color.RGBA{R: 0xD0, G: 0x00, B: 0x00, A: 0xFF},
+		color.RGBA{R: 0x8E, G: 0xCA, B: 0xE6, A: 0xFF},
+		color.RGBA{R: 0x02, G: 0x30, B: 0x47, A: 0xFF},
+		color.RGBA{R: 0x12, G: 0x40, B: 0x57, A: 0xFF},
+		color.RGBA{R: 0x22, G: 0x50, B: 0x68, A: 0xFF},
+		color.RGBA{R: 0x21, G: 0x9E, B: 0xBC, A: 0xFF},
+		color.RGBA{R: 0x2A, G: 0x9D, B: 0x8F, A: 0xFF},
+		color.RGBA{R: 0xCC, G: 0xC5, B: 0xB9, A: 0xFF},
 	}
 	printAveragedImage(palette)
-	printAveragedImage(pkg.Palette{})
+	printAveragedImage([]color.Color{})
 	printHarsherPixelatedImage()
 	printPixelatedImage()
 }
 
-func printPaletteImage(p pkg.Palette, paletteFname string) {
+func printPaletteImage(p []color.Color, paletteFname string) {
 	if len(p) == 0 {
 		file := filepath.Join("testdata", "sample.jpg")
 		bfr := pkg.FromJPEG(file)
-		p = bfr.Palette(8)
+		p = pkg.ImagePalette(bfr, 12)
 	}
 
-	edit := p.ToImageBuffer(50)
-	edit.ToJPEGFile(paletteFname)
+	edit := pkg.ToPaletteImage(p, 50)
+	ToJPEGFile(edit, paletteFname)
 }
 
-func printAveragedImage(palette pkg.Palette) {
+func printAveragedImage(palette []color.Color) {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := pkg.FromJPEG(file)
 	outputFname := "average-with-palette.jpg"
 	paletteFname := "supplied-palette.jpg"
 	if len(palette) == 0 {
-		palette = bfr.Palette(12) // from image itself
+		palette = pkg.ImagePalette(bfr, 12)
 		outputFname = "average-image-palette.jpg"
 		paletteFname = "image-palette.jpg"
 	}
 
 	b2 := pkg.ConstrainImage(bfr, palette)
-	b2.ToJPEGFile(outputFname)
+	ToJPEGFile(b2, outputFname)
 	printPaletteImage(palette, paletteFname)
 }
 
@@ -55,12 +59,26 @@ func printHarsherPixelatedImage() {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := pkg.FromJPEG(file)
 	b2 := pkg.PixelateImage(bfr, pkg.ModeAndNormalize)
-	b2.ToJPEGFile("harsher.jpg")
+	ToJPEGFile(b2, "harsher.jpg")
 }
 
 func printPixelatedImage() {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := pkg.FromJPEG(file)
 	b2 := pkg.PixelateImage(bfr, pkg.ModePixelate)
-	b2.ToJPEGFile("pixelated.jpg")
+	ToJPEGFile(b2, "pixelated.jpg")
+}
+
+func ToJPEGFile(edit image.Image, imgpath string) error {
+	writer, err := os.Create(imgpath)
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+
+	if err := jpeg.Encode(writer, edit, nil); err != nil {
+		return err
+	}
+
+	return nil
 }

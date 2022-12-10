@@ -9,16 +9,7 @@ import (
 	"sort"
 )
 
-type ImageBuffer struct {
-	width, height int
-	pixels        []*Pixel
-}
-
-func NewImageBuffer(width, height int, pixels []*Pixel) *ImageBuffer {
-	return &ImageBuffer{width: width, height: height, pixels: pixels}
-}
-
-func FromJPEG(imgfile string) *ImageBuffer {
+func FromJPEG(imgfile string) image.Image {
 	fp, err := os.Open(imgfile)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to open image: %v", err)
@@ -31,102 +22,28 @@ func FromJPEG(imgfile string) *ImageBuffer {
 		fmt.Fprintf(os.Stderr, "unable to decode JPEG: %v", err)
 	}
 
-	return FromImage(img)
-}
-
-func FromImage(img image.Image) *ImageBuffer {
-	bounds := img.Bounds()
-	bfr := make([]*Pixel, bounds.Max.X*bounds.Max.Y)
-
-	for y := 0; y < bounds.Max.Y; y++ {
-		for x := 0; x < bounds.Max.X; x++ {
-			r, g, b, _ := img.At(x, y).RGBA()
-			pxl := NewPixel(
-				uint8(r>>8),
-				uint8(g>>8),
-				uint8(b>>8))
-			bfr[y*bounds.Max.X+x] = &pxl
-		}
-	}
-
-	return &ImageBuffer{
-		width:  bounds.Max.X,
-		height: bounds.Max.Y,
-		pixels: bfr}
-}
-
-func (b *ImageBuffer) Pixels() []*Pixel {
-	return b.pixels
-}
-
-func (b *ImageBuffer) Width() int  { return b.width }
-func (b *ImageBuffer) Height() int { return b.height }
-
-func (b *ImageBuffer) drawSquare(
-	x, y, width, height int, color Pixel) error {
-
-	px := color.Clone()
-	for dy := y; dy < y+height; dy++ {
-		if dy < 0 || dy >= b.height {
-			continue
-		}
-		for dx := x; dx < x+width; dx++ {
-			if dx < 0 || dx >= b.width {
-				continue
-			}
-			b.pixels[dy*b.width+dx] = &px
-		}
-	}
-
-	return nil
-}
-
-func (b *ImageBuffer) ToImage() image.Image {
-	img := image.NewRGBA(image.Rect(0, 0, b.width, b.height))
-
-	for y := 0; y < b.height; y++ {
-		for x := 0; x < b.width; x++ {
-			c := b.pixels[y*b.width+x]
-			img.Set(x, y, color.RGBA{c.R, c.G, c.B, 1})
-		}
-	}
 	return img
 }
 
-func (b *ImageBuffer) ToJPEGFile(imgpath string) error {
-	edit := b.ToImage()
-	writer, err := os.Create(imgpath)
-	if err != nil {
-		return err
+func ImagePalette(src image.Image, size uint8) []color.Color {
+	bounds := src.Bounds()
+	all := make([]color.Color, 0, bounds.Max.X*bounds.Max.Y)
+	for y := 0; y < bounds.Max.Y; y++ {
+		for x := 0; x < bounds.Max.X; x++ {
+			all = append(all, src.At(x, y))
+		}
 	}
-	defer writer.Close()
-
-	if err := jpeg.Encode(writer, edit, nil); err != nil {
-		return err
-	}
-
-	return nil
+	return normalizeColors_RGBA(all, size)
 }
-
-func (b *ImageBuffer) Palette(size uint8) Palette {
-	return normalizeColors_RGBA(b.pixels, size)
-}
-
-// --------------------
 
 // TODO: improve this
-func normalizeColors_RGBA(pxl []*Pixel, size uint8) Palette {
-	c := map[int32]int{}
+func normalizeColors_RGBA(pxl []color.Color, size uint8) []color.Color {
+	c := map[color.Color]int{}
 	for _, p := range pxl {
-		key := NewPixel(
-			(p.R/size)*size,
-			(p.G/size)*size,
-			(p.B/size)*size,
-		)
-		c[key.Hex()] += 1
+		c[p] += 1
 	}
 
-	keys := make([]int32, 0, len(c))
+	keys := make([]color.Color, 0, len(c))
 	for k := range c {
 		keys = append(keys, k)
 	}
@@ -135,10 +52,10 @@ func normalizeColors_RGBA(pxl []*Pixel, size uint8) Palette {
 		return c[keys[i]] > c[keys[j]]
 	})
 
-	palette := make([]Pixel, 0, size)
+	palette := make([]color.Color, 0, size)
 	var idx uint8 = 0
 	for _, k := range keys {
-		palette = append(palette, PixelFromInt32(k))
+		palette = append(palette, k)
 		idx++
 		if idx >= size {
 			break

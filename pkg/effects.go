@@ -1,5 +1,10 @@
 package pkg
 
+import (
+	"image"
+	"image/color"
+)
+
 var squareSize int = 25
 
 func GetTileSize() int {
@@ -17,99 +22,95 @@ const (
 	ModeAndNormalize pixelateMode = iota
 )
 
-func PixelateImage(bfr *ImageBuffer, mode pixelateMode) *ImageBuffer {
+func PixelateImage(src image.Image, mode pixelateMode) image.Image {
 	square := squareSize
-	edit := make([]*Pixel, len(bfr.pixels))
+	bounds := src.Bounds()
+	dest := image.NewRGBA(bounds)
 
-	for y := 0; y < bfr.height; y += square {
-		for x := 0; x < bfr.width; x += square {
-			var normalized Pixel
+	for y := 0; y < bounds.Max.Y; y += square {
+		for x := 0; x < bounds.Max.X; x += square {
+			var normalized color.Color
 
 			if ModeAndNormalize == mode {
-				p := make([]*Pixel, 0, square*square)
+				p := make([]color.Color, 0, square*square)
 
 				for i := 0; i < square; i++ {
 					for j := 0; j < square; j++ {
 						dy := y + i
-						if dy >= bfr.height {
+						if dy >= bounds.Max.Y {
 							continue
 						}
 						dx := x + j
-						if dx >= bfr.width {
+						if dx >= bounds.Max.X {
 							continue
 						}
-						px := bfr.pixels[dy*bfr.width+dx]
+						px := src.At(dx, dy)
 						p = append(p, px)
 					}
 				}
 				normalized = normalizeColors_RGBA(p, 4)[0]
 			} else {
-				normalized = bfr.pixels[y*bfr.width+x].Clone()
+				normalized = src.At(x, y)
 			}
 
 			for i := 0; i < square; i++ {
 				for j := 0; j < square; j++ {
 					dy := y + i
-					if dy >= bfr.height {
+					if dy >= bounds.Max.Y {
 						continue
 					}
 					dx := x + j
-					if dx >= bfr.width {
+					if dx >= bounds.Max.X {
 						continue
 					}
-					edit[dy*bfr.width+dx] = &normalized
+					dest.Set(dx, dy, normalized)
 				}
 			}
 		}
 	}
-	return &ImageBuffer{
-		width:  bfr.width,
-		height: bfr.height,
-		pixels: edit}
+	return dest
 }
 
-func ConstrainImage(bfr *ImageBuffer, palette Palette) *ImageBuffer {
+func ConstrainImage(src image.Image, palette []color.Color) image.Image {
 	square := squareSize
-	edit := make([]*Pixel, len(bfr.pixels))
+	bounds := src.Bounds()
+	dest := image.NewRGBA(bounds)
 
-	for y := 0; y < bfr.height; y += square {
-		for x := 0; x < bfr.width; x += square {
-			p := make([]*Pixel, 0, square*square)
+	for y := 0; y < bounds.Max.Y; y += square {
+		for x := 0; x < bounds.Max.X; x += square {
+			p := make([]color.Color, 0, square*square)
 
 			for i := 0; i < square; i++ {
 				for j := 0; j < square; j++ {
 					dy := y + i
-					if dy >= bfr.height {
+					if dy >= bounds.Max.Y {
 						continue
 					}
 					dx := x + j
-					if dx >= bfr.width {
+					if dx >= bounds.Max.X {
 						continue
 					}
-					px := bfr.pixels[dy*bfr.width+dx]
+					px := src.At(dx, dy)
 					p = append(p, px)
 				}
 			}
 
 			normalized := normalizeColors_RGBA(p, 4)[0]
-			closest := palette.ClosestTo(normalized)
+			closest := ClosestTo(normalized, palette)
 			for i := 0; i < square; i++ {
 				for j := 0; j < square; j++ {
 					dy := y + i
-					if dy >= bfr.height {
+					if dy >= bounds.Max.Y {
 						continue
 					}
 					dx := x + j
-					if dx >= bfr.width {
+					if dx >= bounds.Max.X {
 						continue
 					}
-					edit[dy*bfr.width+dx] = &closest
+					dest.Set(dx, dy, closest)
 				}
 			}
 		}
 	}
-	return &ImageBuffer{
-		width:  bfr.width,
-		height: bfr.height,
-		pixels: edit}
+	return dest
 }

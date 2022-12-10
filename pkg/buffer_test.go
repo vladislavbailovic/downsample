@@ -1,10 +1,6 @@
 package pkg
 
-import (
-	"path/filepath"
-	"testing"
-)
-
+/*
 func Test_drawSquare_Center(t *testing.T) {
 	raw := []int32{
 		0, 0, 0, 0, 0,
@@ -98,3 +94,4 @@ func Test_Palette(t *testing.T) {
 		t.Errorf("unexpected palette length: %d", len(p))
 	}
 }
+*/
