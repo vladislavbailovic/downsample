@@ -13,7 +13,7 @@ func noSpecialChars(r rune) rune {
 	if unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) {
 		return r
 	}
-	if '-' == r || '#' == r || ':' == r {
+	if '-' == r || '#' == r || ':' == r || '.' == r {
 		return r
 	}
 	fmt.Println(fmt.Sprintf("invalid: %d %c", r, r))
@@ -24,7 +24,7 @@ type htmlTag string
 
 func (x htmlTag) String() string {
 	switch x {
-	case "button", "label", "input", "select", "option":
+	case "button", "label", "input", "select", "option", "canvas", "img":
 		return string(x)
 	default:
 		return "div"

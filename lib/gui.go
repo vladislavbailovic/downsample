@@ -66,37 +66,60 @@ func renderImageBuffer(img *pkg.ImageBuffer, doc js.Value) {
 	otx.Call("putImageData", data, 0, 0)
 }
 
+type uiKind byte
+
+const (
+	uiControl uiKind = iota
+	uiInput   uiKind = iota
+	uiOutput  uiKind = iota
+)
+
 func initGui() {
 	doc := js.Global().Get("document")
+	var img *pkg.ImageBuffer
 
 	palette := pkg.Palette{
 		pkg.PixelFromInt32(0xbada55),
 		pkg.PixelFromInt32(0x0dead0),
 	}
 	algorithm := "pixelate"
-	body := doc.Call("querySelector", "body")
-	img := getSource(doc)
+
+	controls := doc.Call("querySelector", ".interface .controls")
+	io := doc.Call("querySelector", ".interface .io")
 
 	algo := NewAlgo(algorithm)
 	plt := NewPalette(palette)
 	tile := NewTileSize(pkg.GetTileSize())
 	elements := []struct {
-		src creatable
-		el  js.Value
+		src  creatable
+		el   js.Value
+		kind uiKind
 	}{
-		{src: algo, el: algo.Create(doc)},
-		{src: plt, el: plt.Create(doc)},
-		{src: tile, el: tile.Create(doc)},
+		{src: algo, el: algo.Create(doc), kind: uiControl},
+		{src: plt, el: plt.Create(doc), kind: uiControl},
+		{src: tile, el: tile.Create(doc), kind: uiControl},
+
+		{src: &Input, el: Input.Create(doc), kind: uiInput},
+		{src: &Output, el: Output.Create(doc), kind: uiOutput},
 	}
 
 	update := func() {
 		for _, item := range elements {
+			destination := io
+			if item.kind == uiControl {
+				destination = controls
+			} else if img != nil {
+				continue
+			}
 			item.el = item.src.Create(doc)
-			body.Call("append", item.el)
+			destination.Call("append", item.el)
 		}
 	}
 
 	render := func() {
+		if img == nil {
+			return
+		}
 		switch algorithm {
 		case "average":
 			b2 := pkg.ConstrainImage(img, palette)
@@ -112,6 +135,12 @@ func initGui() {
 			renderImageBuffer(img, doc)
 		}
 	}
+
+	Input.Listen("load", func() bool {
+		img = getSource(doc)
+		render()
+		return true
+	})
 
 	doc.Call("addEventListener", "downsample:ui", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
