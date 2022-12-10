@@ -6,22 +6,22 @@ import (
 )
 
 func main() {
-	// palette := []pkg.Pixel{
-	// 	pkg.PixelFromInt32(0xffb703),
-	// 	pkg.PixelFromInt32(0xfb8500),
-	// 	pkg.PixelFromInt32(0xd00000),
-	// 	pkg.PixelFromInt32(0x8ecae6),
-	// 	pkg.PixelFromInt32(0x023047),
-	// 	pkg.PixelFromInt32(0x124057),
-	// 	pkg.PixelFromInt32(0x225068),
-	// 	pkg.PixelFromInt32(0x219ebc),
-	// 	pkg.PixelFromInt32(0x2a9d8f),
-	// 	pkg.PixelFromInt32(0xccc5b9),
-	// }
-	// printAveragedImage(palette)
+	palette := []pkg.Pixel{
+		pkg.PixelFromInt32(0xffb703),
+		pkg.PixelFromInt32(0xfb8500),
+		pkg.PixelFromInt32(0xd00000),
+		pkg.PixelFromInt32(0x8ecae6),
+		pkg.PixelFromInt32(0x023047),
+		pkg.PixelFromInt32(0x124057),
+		pkg.PixelFromInt32(0x225068),
+		pkg.PixelFromInt32(0x219ebc),
+		pkg.PixelFromInt32(0x2a9d8f),
+		pkg.PixelFromInt32(0xccc5b9),
+	}
+	printAveragedImage(palette)
 	printAveragedImage(pkg.Palette{})
-	// printHarsherPixelatedImage()
-	// printPixelatedImage()
+	printHarsherPixelatedImage()
+	printPixelatedImage()
 }
 
 func printPaletteImage(p pkg.Palette, paletteFname string) {
