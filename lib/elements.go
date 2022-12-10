@@ -103,7 +103,7 @@ func (x *htmlElement) Trigger(event string) {
 	if x.ref.IsUndefined() {
 		return
 	}
-	fireEvent(event, x.ref)
+	fireEvent(eventType(event), x.ref)
 }
 
 func (x *htmlElement) Show() {
@@ -120,79 +120,18 @@ func (x *htmlElement) Hide() {
 	x.ref.Get("style").Set("display", "none")
 }
 
-type colorElement struct {
-	color   pkg.Pixel
-	wrapper htmlElement
-	control htmlElement
-	input   htmlElement
-	remove  htmlElement
-}
-
-func NewColor(color pkg.Pixel) *colorElement {
-	return &colorElement{
-		color: color,
-		wrapper: htmlElement{
-			tag:     htmlTag("div"),
-			classes: []htmlAttributeValue{"color"},
-		},
-		control: htmlElement{
-			tag:     htmlTag("div"),
-			classes: []htmlAttributeValue{"control"},
-		},
-		input: htmlElement{
-			tag:     htmlTag("input"),
-			classes: []htmlAttributeValue{"color"},
-			params: map[htmlAttributeName]htmlAttributeValue{
-				"type":  "color",
-				"value": htmlAttributeValue(fmt.Sprintf("#%06x", color.Hex())),
-			},
-		},
-		remove: htmlElement{
-			tag:  htmlTag("button"),
-			text: htmlInnerText("x"),
-		},
-	}
-}
-
-func (x *colorElement) Create(document js.Value) js.Value {
-	w := x.wrapper.Create(document)
-	c := x.control.Create(document)
-
-	x.input.Listen("change", func() bool {
-		cs := x.input.ref.Get("value").String()[1:]
-		if clr, err := strconv.ParseInt(cs, 16, 32); err == nil {
-			x.color = pkg.PixelFromInt32(int32(clr))
-			x.wrapper.Trigger("color:change")
-		} else {
-			fmt.Println("error parsing new color", cs, err)
-		}
-		return true
-	})
-	i := x.input.Create(document)
-
-	x.remove.Listen("click", func() bool {
-		x.wrapper.Trigger("color:remove")
-		return true
-	})
-	r := x.remove.Create(document)
-
-	c.Call("append", i)
-	c.Call("append", r)
-
-	w.Call("append", c)
-
-	return w
-}
-
 type paletteElement struct {
 	palette pkg.Palette
 	wrapper htmlElement
+	colors  []htmlElement
 	add     htmlElement
 }
 
 func NewPalette(palette pkg.Palette) *paletteElement {
+	colors := make([]htmlElement, 0, len(palette))
 	p := paletteElement{
 		palette: palette,
+		colors:  colors,
 		wrapper: htmlElement{
 			tag:     htmlTag("div"),
 			classes: []htmlAttributeValue{"palette"},
@@ -208,24 +147,13 @@ func NewPalette(palette pkg.Palette) *paletteElement {
 
 func (x *paletteElement) Create(document js.Value) js.Value {
 	w := x.wrapper.Create(document)
-	for _, c := range x.palette {
-		color := NewColor(c)
-		color.wrapper.Listen("color:remove", func() bool {
-			x.removeColor(color.color)
-			fireEvent("downsample:ui", document)
-			return true
-		})
-		color.wrapper.Listen("color:change", func() bool {
-			x.removeColor(c)
-			x.addColor(color.color.Hex())
-			fireEvent("downsample:ui", document)
-			return true
-		})
-		el := color.Create(document)
+	for _, color := range x.palette {
+		el := x.makeColorElement(color, document)
 		w.Call("append", el)
 	}
 	x.add.Listen("click", func() bool {
-		x.addColor(0xbada55)
+		px := pkg.PixelFromInt32(0x013120)
+		x.palette = append(x.palette, px)
 		fireEvent("downsample:ui", document)
 		return true
 	})
@@ -235,26 +163,75 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 	return w
 }
 
+func (x *paletteElement) makeColorElement(color pkg.Pixel, document js.Value) js.Value {
+	wrapper := htmlElement{
+		tag:     htmlTag("div"),
+		classes: []htmlAttributeValue{"color"},
+	}
+	control := htmlElement{
+		tag:     htmlTag("div"),
+		classes: []htmlAttributeValue{"control"},
+	}
+	input := htmlElement{
+		tag:     htmlTag("input"),
+		classes: []htmlAttributeValue{"color"},
+		params: map[htmlAttributeName]htmlAttributeValue{
+			"type":  "color",
+			"value": htmlAttributeValue(fmt.Sprintf("#%06x", color.Hex())),
+		},
+	}
+	remove := htmlElement{
+		tag:  htmlTag("button"),
+		text: htmlInnerText("x"),
+	}
+
+	w := wrapper.Create(document)
+	c := control.Create(document)
+
+	input.Listen("change", func() bool {
+		cs := input.ref.Get("value").String()[1:]
+		if clr, err := strconv.ParseInt(cs, 16, 32); err == nil {
+			px := pkg.PixelFromInt32(int32(clr))
+			for idx, clr := range x.palette {
+				if clr.Hex() == color.Hex() {
+					x.palette[idx] = px
+				}
+			}
+			fireEvent("downsample:ui", document)
+		} else {
+			fmt.Println("error parsing new color", cs, err)
+		}
+		return true
+	})
+	i := input.Create(document)
+
+	remove.Listen("click", func() bool {
+		plt := make([]pkg.Pixel, 0, len(x.palette)-1)
+		for _, px := range x.palette {
+			if px.Hex() == color.Hex() {
+				continue
+			}
+			plt = append(plt, px)
+		}
+		x.palette = plt
+		fireEvent("downsample:ui", document)
+		return true
+	})
+	r := remove.Create(document)
+
+	c.Call("append", i)
+	c.Call("append", r)
+
+	w.Call("append", c)
+
+	return w
+}
+
 func (x *paletteElement) Hide() {
 	x.wrapper.Hide()
 }
 func (x *paletteElement) Show() {
 	x.wrapper.ref.Get("style").Set("display", "flex")
-}
-
-func (x *paletteElement) addColor(clr int32) {
-	x.palette = append(x.palette, pkg.PixelFromInt32(clr))
-}
-
-func (x *paletteElement) removeColor(clr pkg.Pixel) {
-	newPalette := make([]pkg.Pixel, 0, len(x.palette)-1)
-	for _, c := range x.palette {
-		if c.Hex() == clr.Hex() {
-			continue
-		}
-		newPalette = append(newPalette, c)
-	}
-	x.palette = newPalette
 }
 
 func (x *paletteElement) GetPalette() pkg.Palette {
@@ -290,20 +267,16 @@ func (x *tileElement) Create(document js.Value) js.Value {
 
 	x.input.params[htmlAttributeName("value")] = htmlAttributeValue(
 		fmt.Sprintf("%d", x.size))
-
+	x.input.Listen("change", func() bool {
+		if s, err := strconv.Atoi(x.input.ref.Get("value").String()); err != nil {
+			fmt.Println("unable to set new size!", x.input.ref.Get("value"), err)
+		} else {
+			x.size = s
+			fireEvent("downsample:ui", document)
+		}
+		return true
+	})
 	t := x.input.Create(document)
-
-	t.Call("addEventListener", "change", js.FuncOf(
-		func(this js.Value, args []js.Value) interface{} {
-			if s, err := strconv.Atoi(t.Get("value").String()); err != nil {
-				fmt.Println("unable to set new size!", t.Get("value"), err)
-			} else {
-				x.size = s
-				fireEvent("downsample:ui", document)
-			}
-			return true
-		},
-	))
 
 	w.Call("append", t)
 	return w
@@ -359,8 +332,8 @@ func (x *algoElement) GetAlgorithm() string {
 	return x.algorithm
 }
 
-func fireEvent(name string, document js.Value) {
-	ev := js.Global().Get("Event").New(name)
+func fireEvent(name eventType, document js.Value) {
+	ev := js.Global().Get("Event").New(name.String())
 	document.Call("dispatchEvent", ev)
 }
 

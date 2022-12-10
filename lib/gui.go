@@ -121,8 +121,6 @@ func initGui() {
 
 	doc.Call("addEventListener", "downsample:ui", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
-			update()
-
 			algorithm = algo.GetAlgorithm()
 			pkg.SetTileSize(tile.size)
 			palette = plt.GetPalette()
@@ -131,6 +129,7 @@ func initGui() {
 				plt.Hide()
 			} else {
 				plt.Show()
+				update()
 			}
 
 			render()
@@ -144,6 +143,7 @@ func initGui() {
 		},
 	))
 
+	update()
 	fireEvent("downsample:ui", doc)
 }
 
