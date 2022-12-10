@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	palette := []color.Color{
+	palette := color.Palette{
 		color.RGBA{R: 0xFF, G: 0xB7, B: 0x03, A: 0xFF},
 		color.RGBA{R: 0xFB, G: 0x85, B: 0x00, A: 0xFF},
 		color.RGBA{R: 0xD0, G: 0x00, B: 0x00, A: 0xFF},
@@ -23,12 +23,12 @@ func main() {
 		color.RGBA{R: 0xCC, G: 0xC5, B: 0xB9, A: 0xFF},
 	}
 	printAveragedImage(palette)
-	printAveragedImage([]color.Color{})
+	printAveragedImage(color.Palette{})
 	printHarsherPixelatedImage()
 	printPixelatedImage()
 }
 
-func printPaletteImage(p []color.Color, paletteFname string) {
+func printPaletteImage(p color.Palette, paletteFname string) {
 	if len(p) == 0 {
 		file := filepath.Join("testdata", "sample.jpg")
 		bfr := pkg.FromJPEG(file)
@@ -39,7 +39,7 @@ func printPaletteImage(p []color.Color, paletteFname string) {
 	ToJPEGFile(edit, paletteFname)
 }
 
-func printAveragedImage(palette []color.Color) {
+func printAveragedImage(palette color.Palette) {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := pkg.FromJPEG(file)
 	outputFname := "average-with-palette.jpg"

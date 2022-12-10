@@ -25,9 +25,9 @@ func FromJPEG(imgfile string) image.Image {
 	return img
 }
 
-func ImagePalette(src image.Image, size uint8) []color.Color {
+func ImagePalette(src image.Image, size uint8) color.Palette {
 	bounds := src.Bounds()
-	all := make([]color.Color, 0, bounds.Max.X*bounds.Max.Y)
+	all := make(color.Palette, 0, bounds.Max.X*bounds.Max.Y)
 	for y := 0; y < bounds.Max.Y; y++ {
 		for x := 0; x < bounds.Max.X; x++ {
 			all = append(all, src.At(x, y))
@@ -37,7 +37,7 @@ func ImagePalette(src image.Image, size uint8) []color.Color {
 }
 
 // TODO: improve this
-func normalizeColors_RGBA(pxl []color.Color, size uint8) []color.Color {
+func normalizeColors_RGBA(pxl color.Palette, size uint8) color.Palette {
 	c := map[color.Color]int{}
 	for _, p := range pxl {
 		r, g, b, _ := p.RGBA()
@@ -50,7 +50,7 @@ func normalizeColors_RGBA(pxl []color.Color, size uint8) []color.Color {
 		c[n] += 1
 	}
 
-	keys := make([]color.Color, 0, len(c))
+	keys := make(color.Palette, 0, len(c))
 	for k := range c {
 		keys = append(keys, k)
 	}
@@ -59,7 +59,7 @@ func normalizeColors_RGBA(pxl []color.Color, size uint8) []color.Color {
 		return c[keys[i]] > c[keys[j]]
 	})
 
-	palette := make([]color.Color, 0, size)
+	palette := make(color.Palette, 0, size)
 	var idx uint8 = 0
 	for _, k := range keys {
 		palette = append(palette, k)

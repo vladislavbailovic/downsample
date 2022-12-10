@@ -32,7 +32,7 @@ func PixelateImage(src image.Image, mode pixelateMode) image.Image {
 			var normalized color.Color
 
 			if ModeAndNormalize == mode {
-				p := make([]color.Color, 0, square*square)
+				p := make(color.Palette, 0, square*square)
 
 				for i := 0; i < square; i++ {
 					for j := 0; j < square; j++ {
@@ -71,14 +71,14 @@ func PixelateImage(src image.Image, mode pixelateMode) image.Image {
 	return dest
 }
 
-func ConstrainImage(src image.Image, palette []color.Color) image.Image {
+func ConstrainImage(src image.Image, palette color.Palette) image.Image {
 	square := squareSize
 	bounds := src.Bounds()
 	dest := image.NewRGBA(bounds)
 
 	for y := 0; y < bounds.Max.Y; y += square {
 		for x := 0; x < bounds.Max.X; x += square {
-			p := make([]color.Color, 0, square*square)
+			p := make(color.Palette, 0, square*square)
 
 			for i := 0; i < square; i++ {
 				for j := 0; j < square; j++ {
@@ -96,7 +96,7 @@ func ConstrainImage(src image.Image, palette []color.Color) image.Image {
 			}
 
 			normalized := normalizeColors_RGBA(p, 4)[0]
-			closest := ClosestTo(normalized, palette)
+			closest := palette.Convert(normalized)
 			for i := 0; i < square; i++ {
 				for j := 0; j < square; j++ {
 					dy := y + i
