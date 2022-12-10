@@ -55,7 +55,7 @@ func normalizeColors_RGBA(pxl color.Palette, size uint8) color.Palette {
 		keys = append(keys, k)
 	}
 
-	sort.SliceStable(keys, func(i, j int) bool {
+	sort.Slice(keys, func(i, j int) bool {
 		return c[keys[i]] > c[keys[j]]
 	})
 
