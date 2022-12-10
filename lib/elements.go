@@ -4,42 +4,55 @@ import (
 	"downsample/pkg"
 	"fmt"
 	"strconv"
+	"strings"
 	"syscall/js"
+	"unicode"
 )
+
+func noSpecialChars(r rune) rune {
+	if unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) {
+		return r
+	}
+	if '-' == r || '#' == r || ':' == r {
+		return r
+	}
+	fmt.Println(fmt.Sprintf("invalid: %d %c", r, r))
+	return rune(-1)
+}
 
 type htmlTag string
 
 func (x htmlTag) String() string {
-	// TODO: validate
-	return string(x)
+	switch x {
+	case "button", "label", "input", "select", "option":
+		return string(x)
+	default:
+		return "div"
+	}
 }
 
 type htmlInnerText string
 
 func (x htmlInnerText) String() string {
-	// TODO: validate
-	return string(x)
+	return strings.Map(noSpecialChars, string(x))
 }
 
 type htmlAttributeName string
 
 func (x htmlAttributeName) String() string {
-	// TODO: validate
-	return string(x)
+	return strings.Map(noSpecialChars, string(x))
 }
 
 type htmlAttributeValue string
 
 func (x htmlAttributeValue) String() string {
-	// TODO: validate
-	return string(x)
+	return strings.Map(noSpecialChars, string(x))
 }
 
 type eventType string
 
 func (x eventType) String() string {
-	// TODO: validate
-	return string(x)
+	return strings.Map(noSpecialChars, string(x))
 }
 
 type handlerCallback func() bool
