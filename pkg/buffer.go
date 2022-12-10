@@ -40,7 +40,14 @@ func ImagePalette(src image.Image, size uint8) []color.Color {
 func normalizeColors_RGBA(pxl []color.Color, size uint8) []color.Color {
 	c := map[color.Color]int{}
 	for _, p := range pxl {
-		c[p] += 1
+		r, g, b, _ := p.RGBA()
+		n := color.RGBA{
+			R: (uint8(r/256) / size) * size,
+			G: (uint8(g/256) / size) * size,
+			B: (uint8(b/256) / size) * size,
+			A: 0xFF,
+		}
+		c[n] += 1
 	}
 
 	keys := make([]color.Color, 0, len(c))
