@@ -191,7 +191,7 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 		classes: []htmlAttributeValue{"color"},
 		params: map[htmlAttributeName]htmlAttributeValue{
 			"type":  "color",
-			"value": htmlAttributeValue(fmt.Sprintf("#%02x%02x%02x", cr, cg, cb)),
+			"value": htmlAttributeValue(fmt.Sprintf("#%02x%02x%02x", uint8(cr/256), uint8(cg/256), uint8(cb/256))),
 		},
 	}
 	remove := htmlElement{
