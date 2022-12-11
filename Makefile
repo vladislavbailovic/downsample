@@ -1,3 +1,5 @@
+GOFILES=$(shell find . -type f -name '*.go')
+
 test:
 	go test downsample/pkg/...
 	cd lib && GOOS=js GOARCH=wasm go test ./...
@@ -15,7 +17,7 @@ public_html/assets/downsample.wasm: Makefile
 	cd lib && GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o ../public_html/assets/downsample.wasm
 	# cd lib && tinygo build -o ../public_html/assets/downsample.wasm -target wasm
 
-build: public_html/assets/wasm_exec.js public_html/assets/downsample.wasm Makefile
+build: public_html/assets/wasm_exec.js public_html/assets/downsample.wasm Makefile $(GOFILES)
 	@echo "Done"
 
 

@@ -44,8 +44,8 @@ func getSource(doc js.Value) image.Image {
 		idx++ // A
 		px := color.RGBA{R: r, G: g, B: b, A: a}
 
-		y := pos / width
-		x := pos % width
+		y := (pos / 4) / width
+		x := (pos / 4) % width
 		buffer.Set(x, y, px)
 	}
 
