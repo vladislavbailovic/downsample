@@ -3,6 +3,8 @@ package main
 import (
 	"downsample/pkg"
 	"fmt"
+	"image"
+	"image/color"
 	"syscall/js"
 )
 
@@ -11,7 +13,7 @@ const (
 	elOutput htmlAttributeValue = "output"
 )
 
-func getSource(doc js.Value) *pkg.ImageBuffer {
+func getSource(doc js.Value) image.Image {
 	data := doc.Call("createElement", "canvas")
 	ctx := data.Call("getContext", "2d")
 
@@ -25,38 +27,49 @@ func getSource(doc js.Value) *pkg.ImageBuffer {
 
 	raw := ctx.Call("getImageData", 0, 0, width, height)
 	source := raw.Get("data")
-	buffer := make([]*pkg.Pixel, 0, raw.Length()/4)
+	buffer := image.NewRGBA(image.Rectangle{
+		Min: image.Point{0, 0},
+		Max: image.Point{width, height},
+	})
 	idx := 0
 	for idx < source.Length() {
+		pos := idx
 		r := uint8(source.Index(idx).Int())
 		idx++
 		g := uint8(source.Index(idx).Int())
 		idx++
 		b := uint8(source.Index(idx).Int())
 		idx++
+		a := uint8(source.Index(idx).Int())
 		idx++ // A
-		px := pkg.NewPixel(r, g, b)
-		buffer = append(buffer, &px)
-	}
-	img := pkg.NewImageBuffer(width, height, buffer)
+		px := color.RGBA{R: r, G: g, B: b, A: a}
 
-	return img
+		y := pos / width
+		x := pos % width
+		buffer.Set(x, y, px)
+	}
+
+	return buffer
 }
 
-func renderImageBuffer(img *pkg.ImageBuffer, doc js.Value) {
+func renderImageBuffer(img image.Image, doc js.Value) {
 	out := doc.Call("getElementById", elOutput.String())
-	out.Set("width", img.Width())
-	out.Set("height", img.Height())
+	bounds := img.Bounds()
+	out.Set("width", bounds.Max.X)
+	out.Set("height", bounds.Max.Y)
 
 	otx := out.Call("getContext", "2d")
-	data := otx.Call("createImageData", img.Width(), img.Height())
+	data := otx.Call("createImageData", bounds.Max.X, bounds.Max.Y)
 
-	pixels := make([]byte, 0, len(img.Pixels())*4)
-	for _, px := range img.Pixels() {
-		pixels = append(pixels, px.R)
-		pixels = append(pixels, px.G)
-		pixels = append(pixels, px.B)
-		pixels = append(pixels, 0xff)
+	pixels := make([]byte, 0, bounds.Max.X*bounds.Max.Y*4)
+	for y := 0; y < bounds.Max.Y; y++ {
+		for x := 0; x < bounds.Max.X; x++ {
+			r, g, b, a := img.At(x, y).RGBA()
+			pixels = append(pixels, uint8(r/256))
+			pixels = append(pixels, uint8(g/256))
+			pixels = append(pixels, uint8(b/256))
+			pixels = append(pixels, uint8(a/256))
+		}
 	}
 	source := js.Global().Get("Uint8ClampedArray").New(
 		len(pixels))
@@ -77,11 +90,11 @@ const (
 
 func initGui() {
 	doc := js.Global().Get("document")
-	var img *pkg.ImageBuffer
+	var img image.Image
 
-	palette := pkg.Palette{
-		pkg.PixelFromInt32(0xbada55),
-		pkg.PixelFromInt32(0x0dead0),
+	palette := color.Palette{
+		color.RGBA{R: 0xba, G: 0xda, B: 0x55, A: 0xff},
+		color.RGBA{R: 0x0d, G: 0xea, B: 0xd0, A: 0xff},
 	}
 	algorithm := "pixelate"
 

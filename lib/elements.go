@@ -1,8 +1,8 @@
 package main
 
 import (
-	"downsample/pkg"
 	"fmt"
+	"image/color"
 	"strconv"
 	"strings"
 	"syscall/js"
@@ -134,13 +134,13 @@ func (x *htmlElement) Hide() {
 }
 
 type paletteElement struct {
-	palette pkg.Palette
+	palette color.Palette
 	wrapper htmlElement
 	colors  []htmlElement
 	add     htmlElement
 }
 
-func NewPalette(palette pkg.Palette) *paletteElement {
+func NewPalette(palette color.Palette) *paletteElement {
 	colors := make([]htmlElement, 0, len(palette))
 	p := paletteElement{
 		palette: palette,
@@ -165,7 +165,7 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 		w.Call("append", el)
 	}
 	x.add.Listen("click", func() bool {
-		px := pkg.PixelFromInt32(0x013120)
+		px := color.RGBA{R: 0x01, G: 0x31, B: 0x20, A: 0xFF}
 		x.palette = append(x.palette, px)
 		fireEvent("downsample:ui", document)
 		return true
@@ -176,7 +176,8 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 	return w
 }
 
-func (x *paletteElement) makeColorElement(color pkg.Pixel, document js.Value) js.Value {
+func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js.Value {
+	cr, cg, cb, _ := clr.RGBA()
 	wrapper := htmlElement{
 		tag:     htmlTag("div"),
 		classes: []htmlAttributeValue{"color"},
@@ -190,7 +191,7 @@ func (x *paletteElement) makeColorElement(color pkg.Pixel, document js.Value) js
 		classes: []htmlAttributeValue{"color"},
 		params: map[htmlAttributeName]htmlAttributeValue{
 			"type":  "color",
-			"value": htmlAttributeValue(fmt.Sprintf("#%06x", color.Hex())),
+			"value": htmlAttributeValue(fmt.Sprintf("#%02x%02x%02x", cr, cg, cb)),
 		},
 	}
 	remove := htmlElement{
@@ -203,25 +204,33 @@ func (x *paletteElement) makeColorElement(color pkg.Pixel, document js.Value) js
 
 	input.Listen("change", func() bool {
 		cs := input.ref.Get("value").String()[1:]
-		if clr, err := strconv.ParseInt(cs, 16, 32); err == nil {
-			px := pkg.PixelFromInt32(int32(clr))
-			for idx, clr := range x.palette {
-				if clr.Hex() == color.Hex() {
-					x.palette[idx] = px
-				}
-			}
-			fireEvent("downsample:ui", document)
-		} else {
-			fmt.Println("error parsing new color", cs, err)
+		rs, err := strconv.ParseInt(cs[0:2], 16, 8)
+		if err != nil {
+			return true
 		}
+		gs, err := strconv.ParseInt(cs[2:4], 16, 8)
+		if err != nil {
+			return true
+		}
+		bs, err := strconv.ParseInt(cs[4:6], 16, 8)
+		if err != nil {
+			return true
+		}
+		px := color.RGBA{R: uint8(rs), G: uint8(gs), B: uint8(bs), A: 0xFF}
+		for idx, c := range x.palette {
+			if c == clr {
+				x.palette[idx] = px
+			}
+		}
+		fireEvent("downsample:ui", document)
 		return true
 	})
 	i := input.Create(document)
 
 	remove.Listen("click", func() bool {
-		plt := make([]pkg.Pixel, 0, len(x.palette)-1)
+		plt := make(color.Palette, 0, len(x.palette)-1)
 		for _, px := range x.palette {
-			if px.Hex() == color.Hex() {
+			if px == clr {
 				continue
 			}
 			plt = append(plt, px)
@@ -247,7 +256,7 @@ func (x *paletteElement) Show() {
 	x.wrapper.ref.Get("style").Set("display", "flex")
 }
 
-func (x *paletteElement) GetPalette() pkg.Palette {
+func (x *paletteElement) GetPalette() color.Palette {
 	return x.palette
 }
 
