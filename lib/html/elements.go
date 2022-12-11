@@ -1,4 +1,4 @@
-package main
+package html
 
 import (
 	"fmt"
@@ -48,6 +48,10 @@ func (x *tileElement) Create(document js.Value) js.Value {
 
 	w.Call("append", t)
 	return w
+}
+
+func (x *tileElement) GetSize() int {
+	return x.size
 }
 
 type algoElement struct {
@@ -101,14 +105,14 @@ func (x *algoElement) GetAlgorithm() string {
 }
 
 var Input htmlElement = htmlElement{
-	id:  htmlAttributeValue(elInput),
+	id:  htmlAttributeValue(InputElementID),
 	tag: htmlTag("img"),
 	params: map[htmlAttributeName]htmlAttributeValue{
 		"src": "sample.jpg",
 	},
 }
 var Output htmlElement = htmlElement{
-	id:  htmlAttributeValue(elOutput),
+	id:  htmlAttributeValue(OutputElementID),
 	tag: htmlTag("canvas"),
 }
 

@@ -1,4 +1,4 @@
-package main
+package html
 
 import (
 	"fmt"
@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	elInput  htmlAttributeValue = "input-file"
-	elOutput htmlAttributeValue = "output"
+	InputElementID  htmlAttributeValue = "input-file"
+	OutputElementID htmlAttributeValue = "output"
 )
 
 func noSpecialChars(r rune) rune {

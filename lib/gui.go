@@ -1,6 +1,7 @@
 package main
 
 import (
+	"downsample/lib/html"
 	"downsample/pkg"
 	"fmt"
 	"image"
@@ -12,7 +13,7 @@ func getSource(doc js.Value) image.Image {
 	data := doc.Call("createElement", "canvas")
 	ctx := data.Call("getContext", "2d")
 
-	input := doc.Call("getElementById", elInput.String())
+	input := doc.Call("getElementById", html.InputElementID.String())
 	width := input.Get("width").Int()
 	height := input.Get("height").Int()
 
@@ -48,7 +49,7 @@ func getSource(doc js.Value) image.Image {
 }
 
 func renderImageBuffer(img image.Image, doc js.Value) {
-	out := doc.Call("getElementById", elOutput.String())
+	out := doc.Call("getElementById", html.OutputElementID.String())
 	bounds := img.Bounds()
 	out.Set("width", bounds.Max.X)
 	out.Set("height", bounds.Max.Y)
@@ -93,16 +94,16 @@ func initGui() {
 	}
 	algorithm := "pixelate"
 
-	root := Root.Create(doc)
-	controls := Controls.Create(doc)
-	io := Io.Create(doc)
+	root := html.Root.Create(doc)
+	controls := html.Controls.Create(doc)
+	io := html.Io.Create(doc)
 	root.Call("append", controls)
 	root.Call("append", io)
 	doc.Call("querySelector", "body>div").Call("replaceWith", root)
 
-	algo := NewAlgo(algorithm)
-	plt := NewPalette(palette)
-	tile := NewTileSize(pkg.GetTileSize())
+	algo := html.NewAlgo(algorithm)
+	plt := html.NewPalette(palette)
+	tile := html.NewTileSize(pkg.GetTileSize())
 	elements := []struct {
 		src  creatable
 		el   js.Value
@@ -112,8 +113,8 @@ func initGui() {
 		{src: plt, el: plt.Create(doc), kind: uiControl},
 		{src: tile, el: tile.Create(doc), kind: uiControl},
 
-		{src: &Input, el: Input.Create(doc), kind: uiInput},
-		{src: &Output, el: Output.Create(doc), kind: uiOutput},
+		{src: &html.Input, el: html.Input.Create(doc), kind: uiInput},
+		{src: &html.Output, el: html.Output.Create(doc), kind: uiOutput},
 	}
 
 	update := func() {
@@ -149,26 +150,29 @@ func initGui() {
 		}
 	}
 
-	Input.Listen("load", func() bool {
+	html.Input.Listen("load", func() bool {
 		img = getSource(doc)
 		render()
 		return true
 	})
 
+	renderUI := func() {
+		algorithm = algo.GetAlgorithm()
+		pkg.SetTileSize(tile.GetSize())
+		palette = plt.GetPalette()
+
+		if algorithm != "average" {
+			plt.Hide()
+		} else {
+			plt.Show()
+			update()
+		}
+
+		render()
+	}
 	doc.Call("addEventListener", "downsample:ui", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
-			algorithm = algo.GetAlgorithm()
-			pkg.SetTileSize(tile.size)
-			palette = plt.GetPalette()
-
-			if algorithm != "average" {
-				plt.Hide()
-			} else {
-				plt.Show()
-				update()
-			}
-
-			render()
+			renderUI()
 			return true
 		},
 	))
@@ -180,7 +184,7 @@ func initGui() {
 	))
 
 	update()
-	fireEvent("downsample:ui", doc)
+	renderUI()
 }
 
 type creatable interface {
