@@ -221,7 +221,7 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 		}
 		px := color.RGBA{R: uint8(rs), G: uint8(gs), B: uint8(bs), A: 0xFF}
 		for idx, c := range x.palette {
-			if colorEq(c, clr) {
+			if c == clr {
 				x.palette[idx] = px
 				break // Just once
 			}
@@ -234,7 +234,7 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 	remove.Listen("click", func() bool {
 		plt := make(color.Palette, 0, len(x.palette)-1)
 		for _, px := range x.palette {
-			if colorEq(px, clr) {
+			if px == clr {
 				continue
 			}
 			plt = append(plt, px)
@@ -251,15 +251,6 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 	w.Call("append", c)
 
 	return w
-}
-
-func colorEq(c1, c2 color.Color) bool {
-	r1, g1, b1, a1 := c1.RGBA()
-	r2, g2, b2, a2 := c2.RGBA()
-	return r1 == r2 &&
-		g1 == g2 &&
-		b1 == b2 &&
-		a1 == a2
 }
 
 func (x *paletteElement) Hide() {
