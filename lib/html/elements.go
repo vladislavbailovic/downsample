@@ -16,12 +16,12 @@ func NewTileSize(size int) *tileElement {
 	return &tileElement{
 		size: size,
 		wrapper: htmlElement{
-			tag:     htmlTag("label"),
-			classes: []htmlAttributeValue{"tile-size"},
+			tag:     tagName("label"),
+			classes: []attributeValue{"tile-size"},
 		},
 		input: htmlElement{
-			tag: htmlTag("input"),
-			params: map[htmlAttributeName]htmlAttributeValue{
+			tag: tagName("input"),
+			params: map[attributeName]attributeValue{
 				"type": "number",
 				"min":  "2",
 				"max":  "100",
@@ -33,7 +33,7 @@ func NewTileSize(size int) *tileElement {
 func (x *tileElement) Create(document js.Value) js.Value {
 	w := x.wrapper.Create(document)
 
-	x.input.params[htmlAttributeName("value")] = htmlAttributeValue(
+	x.input.params[attributeName("value")] = attributeValue(
 		fmt.Sprintf("%d", x.size))
 	x.input.Listen("change", func() bool {
 		if s, err := strconv.Atoi(x.input.ref.Get("value").String()); err != nil {
@@ -63,8 +63,8 @@ func NewAlgo(algorithm string) *algoElement {
 	return &algoElement{
 		algorithm: algorithm,
 		wrapper: htmlElement{
-			tag: htmlTag("select"),
-			id:  htmlAttributeValue("algo"),
+			tag: tagName("select"),
+			id:  attributeValue("algo"),
 		},
 	}
 }
@@ -83,16 +83,16 @@ func (x *algoElement) Create(document js.Value) js.Value {
 		"average",
 	}
 	for _, a := range algos {
-		opts := map[htmlAttributeName]htmlAttributeValue{
-			"value": htmlAttributeValue(a),
+		opts := map[attributeName]attributeValue{
+			"value": attributeValue(a),
 		}
 		if a == x.algorithm {
 			opts["selected"] = "selected"
 		}
 		el := htmlElement{
-			tag:    htmlTag("option"),
+			tag:    tagName("option"),
 			params: opts,
-			text:   htmlInnerText(a),
+			text:   innerText(a),
 		}
 		w.Call("append", el.Create(document))
 	}
@@ -105,26 +105,26 @@ func (x *algoElement) GetAlgorithm() string {
 }
 
 var Input htmlElement = htmlElement{
-	id:  htmlAttributeValue(InputElementID),
-	tag: htmlTag("img"),
-	params: map[htmlAttributeName]htmlAttributeValue{
+	id:  attributeValue(InputElementID),
+	tag: tagName("img"),
+	params: map[attributeName]attributeValue{
 		"src": "sample.jpg",
 	},
 }
 var Output htmlElement = htmlElement{
-	id:  htmlAttributeValue(OutputElementID),
-	tag: htmlTag("canvas"),
+	id:  attributeValue(OutputElementID),
+	tag: tagName("canvas"),
 }
 
 var Root htmlElement = htmlElement{
-	tag:     htmlTag("div"),
-	classes: []htmlAttributeValue{"interface"},
+	tag:     tagName("div"),
+	classes: []attributeValue{"interface"},
 }
 var Controls htmlElement = htmlElement{
-	tag:     htmlTag("div"),
-	classes: []htmlAttributeValue{"controls"},
+	tag:     tagName("div"),
+	classes: []attributeValue{"controls"},
 }
 var Io htmlElement = htmlElement{
-	tag:     htmlTag("div"),
-	classes: []htmlAttributeValue{"io"},
+	tag:     tagName("div"),
+	classes: []attributeValue{"io"},
 }

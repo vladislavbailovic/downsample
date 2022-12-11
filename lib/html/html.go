@@ -8,8 +8,8 @@ import (
 )
 
 const (
-	InputElementID  htmlAttributeValue = "input-file"
-	OutputElementID htmlAttributeValue = "output"
+	InputElementID  attributeValue = "input-file"
+	OutputElementID attributeValue = "output"
 )
 
 func noSpecialChars(r rune) rune {
@@ -23,9 +23,9 @@ func noSpecialChars(r rune) rune {
 	return rune(-1)
 }
 
-type htmlTag string
+type tagName string
 
-func (x htmlTag) String() string {
+func (x tagName) String() string {
 	switch x {
 	case "button", "label", "input", "select", "option", "canvas", "img":
 		return string(x)
@@ -34,21 +34,21 @@ func (x htmlTag) String() string {
 	}
 }
 
-type htmlInnerText string
+type innerText string
 
-func (x htmlInnerText) String() string {
+func (x innerText) String() string {
 	return strings.Map(noSpecialChars, string(x))
 }
 
-type htmlAttributeName string
+type attributeName string
 
-func (x htmlAttributeName) String() string {
+func (x attributeName) String() string {
 	return strings.Map(noSpecialChars, string(x))
 }
 
-type htmlAttributeValue string
+type attributeValue string
 
-func (x htmlAttributeValue) String() string {
+func (x attributeValue) String() string {
 	return strings.Map(noSpecialChars, string(x))
 }
 
@@ -61,11 +61,11 @@ func (x eventType) String() string {
 type handlerCallback func() bool
 
 type htmlElement struct {
-	id       htmlAttributeValue
-	classes  []htmlAttributeValue
-	tag      htmlTag
-	params   map[htmlAttributeName]htmlAttributeValue
-	text     htmlInnerText
+	id       attributeValue
+	classes  []attributeValue
+	tag      tagName
+	params   map[attributeName]attributeValue
+	text     innerText
 	handlers map[eventType]handlerCallback
 	ref      js.Value
 }

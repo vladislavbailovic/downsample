@@ -20,13 +20,13 @@ func NewPalette(palette color.Palette) *paletteElement {
 		palette: palette,
 		colors:  colors,
 		wrapper: htmlElement{
-			tag:     htmlTag("div"),
-			classes: []htmlAttributeValue{"palette"},
+			tag:     tagName("div"),
+			classes: []attributeValue{"palette"},
 		},
 		add: htmlElement{
-			tag:     htmlTag("button"),
-			classes: []htmlAttributeValue{"add"},
-			text:    htmlInnerText("Add"),
+			tag:     tagName("button"),
+			classes: []attributeValue{"add"},
+			text:    innerText("Add"),
 		},
 	}
 	return &p
@@ -53,24 +53,24 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js.Value {
 	cr, cg, cb, _ := clr.RGBA()
 	wrapper := htmlElement{
-		tag:     htmlTag("div"),
-		classes: []htmlAttributeValue{"color"},
+		tag:     tagName("div"),
+		classes: []attributeValue{"color"},
 	}
 	control := htmlElement{
-		tag:     htmlTag("div"),
-		classes: []htmlAttributeValue{"control"},
+		tag:     tagName("div"),
+		classes: []attributeValue{"control"},
 	}
 	input := htmlElement{
-		tag:     htmlTag("input"),
-		classes: []htmlAttributeValue{"color"},
-		params: map[htmlAttributeName]htmlAttributeValue{
+		tag:     tagName("input"),
+		classes: []attributeValue{"color"},
+		params: map[attributeName]attributeValue{
 			"type":  "color",
-			"value": htmlAttributeValue(fmt.Sprintf("#%02x%02x%02x", uint8(cr/256), uint8(cg/256), uint8(cb/256))),
+			"value": attributeValue(fmt.Sprintf("#%02x%02x%02x", uint8(cr/256), uint8(cg/256), uint8(cb/256))),
 		},
 	}
 	remove := htmlElement{
-		tag:  htmlTag("button"),
-		text: htmlInnerText("x"),
+		tag:  tagName("button"),
+		text: innerText("x"),
 	}
 
 	w := wrapper.Create(document)
