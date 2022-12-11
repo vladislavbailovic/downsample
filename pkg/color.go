@@ -5,9 +5,25 @@ import (
 	"sort"
 )
 
+type NormalizerType byte
+
+const (
+	NormalizerNormal  NormalizerType = iota
+	NormalizerAverage NormalizerType = iota
+)
+
 type Normalizer interface {
 	Normalize(color.Palette, uint8) color.Palette
 }
+
+type QuantizerType byte
+
+const (
+	QuantizerRGB       QuantizerType = iota
+	QuantizerShiftRGB  QuantizerType = iota
+	QuantizerGray      QuantizerType = iota
+	QuantizerShiftGray QuantizerType = iota
+)
 
 type Quantizer interface {
 	Quantize(color.Color) color.Color
@@ -83,49 +99,49 @@ func (x AverageNormalizer) Normalize(pxl color.Palette, size uint8) color.Palett
 }
 
 type RGBQuantizer struct {
-	factor uint8
+	Factor uint8
 }
 
 func (x RGBQuantizer) Quantize(c color.Color) color.Color {
 	r, g, b, _ := c.RGBA()
 	return color.RGBA{
-		R: (uint8(r/256) / x.factor) * x.factor,
-		G: (uint8(g/256) / x.factor) * x.factor,
-		B: (uint8(b/256) / x.factor) * x.factor,
+		R: (uint8(r/256) / x.Factor) * x.Factor,
+		G: (uint8(g/256) / x.Factor) * x.Factor,
+		B: (uint8(b/256) / x.Factor) * x.Factor,
 		A: 0xFF,
 	}
 }
 
 type RGBShiftQuantizer struct {
-	factor uint8
+	Factor uint8
 }
 
 func (x RGBShiftQuantizer) Quantize(c color.Color) color.Color {
 	r, g, b, _ := c.RGBA()
 	return color.RGBA{
-		R: (uint8(r/256) >> x.factor) << x.factor,
-		G: (uint8(g/256) >> x.factor) << x.factor,
-		B: (uint8(b/256) >> x.factor) << x.factor,
+		R: (uint8(r/256) >> x.Factor) << x.Factor,
+		G: (uint8(g/256) >> x.Factor) << x.Factor,
+		B: (uint8(b/256) >> x.Factor) << x.Factor,
 		A: 0xFF,
 	}
 }
 
 type GrayQuantizer struct {
-	factor uint8
+	Factor uint8
 }
 
 func (x GrayQuantizer) Quantize(c color.Color) color.Color {
 	rn := color.GrayModel.Convert(c).(color.Gray)
-	return color.Gray{Y: rn.Y / x.factor * x.factor}
+	return color.Gray{Y: rn.Y / x.Factor * x.Factor}
 }
 
 type GrayShiftQuantizer struct {
-	factor uint8
+	Factor uint8
 }
 
 func (x GrayShiftQuantizer) Quantize(c color.Color) color.Color {
 	rn := color.GrayModel.Convert(c).(color.Gray)
-	return color.Gray{Y: rn.Y << x.factor >> x.factor}
+	return color.Gray{Y: rn.Y << x.Factor >> x.Factor}
 }
 
 type internalPalette struct {

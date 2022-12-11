@@ -87,12 +87,17 @@ const (
 func initGui() {
 	doc := js.Global().Get("document")
 	var img image.Image
+	var quantizer pkg.Quantizer
+	var normalizer pkg.Normalizer
 
 	palette := color.Palette{
 		color.RGBA{R: 0xba, G: 0xda, B: 0x55, A: 0xff},
 		color.RGBA{R: 0x0d, G: 0xea, B: 0xd0, A: 0xff},
 	}
 	algorithm := "pixelate"
+	var factor byte = 5
+	quantizer = pkg.RGBQuantizer{Factor: factor}
+	normalizer = pkg.StraightNormalizer{Q: quantizer}
 
 	root := html.Root.Create(doc)
 	controls := html.Controls.Create(doc)
@@ -104,6 +109,7 @@ func initGui() {
 	algo := html.NewAlgo(algorithm)
 	plt := html.NewPalette(palette)
 	tile := html.NewTileSize(pkg.GetTileSize())
+	norm := html.NewNormalizer()
 	elements := []struct {
 		src  creatable
 		el   js.Value
@@ -112,6 +118,7 @@ func initGui() {
 		{src: algo, el: algo.Create(doc), kind: uiControl},
 		{src: plt, el: plt.Create(doc), kind: uiControl},
 		{src: tile, el: tile.Create(doc), kind: uiControl},
+		{src: norm, el: norm.Create(doc), kind: uiControl},
 
 		{src: &html.Input, el: html.Input.Create(doc), kind: uiInput},
 		{src: &html.Output, el: html.Output.Create(doc), kind: uiOutput},
@@ -134,15 +141,16 @@ func initGui() {
 		if img == nil {
 			return
 		}
+
 		switch algorithm {
 		case "average":
-			b2 := pkg.ConstrainImage(img, palette, nil)
+			b2 := pkg.ConstrainImage(img, palette, normalizer)
 			renderImageBuffer(b2, doc)
 		case "normalize":
-			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize, nil)
+			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize, normalizer)
 			renderImageBuffer(b2, doc)
 		case "pixelate":
-			b2 := pkg.PixelateImage(img, pkg.ModePixelate, nil)
+			b2 := pkg.PixelateImage(img, pkg.ModePixelate, normalizer)
 			renderImageBuffer(b2, doc)
 		default:
 			fmt.Println("ignoring the unknown algo", algo)
@@ -160,6 +168,25 @@ func initGui() {
 		algorithm = algo.GetAlgorithm()
 		pkg.SetTileSize(tile.GetSize())
 		palette = plt.GetPalette()
+		factor = norm.GetFactor()
+
+		switch norm.GetQuantizerType() {
+		case pkg.QuantizerRGB:
+			quantizer = pkg.RGBQuantizer{Factor: factor}
+		case pkg.QuantizerShiftRGB:
+			quantizer = pkg.RGBShiftQuantizer{Factor: factor}
+		case pkg.QuantizerGray:
+			quantizer = pkg.GrayQuantizer{Factor: factor}
+		case pkg.QuantizerShiftGray:
+			quantizer = pkg.GrayShiftQuantizer{Factor: factor}
+		}
+
+		switch norm.GetNormalizerType() {
+		case pkg.NormalizerNormal:
+			normalizer = pkg.StraightNormalizer{Q: quantizer}
+		case pkg.NormalizerAverage:
+			normalizer = pkg.AverageNormalizer{Q: quantizer}
+		}
 
 		if algorithm != "average" {
 			plt.Hide()

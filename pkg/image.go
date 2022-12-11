@@ -26,7 +26,7 @@ func FromJPEG(imgfile string) image.Image {
 
 func ImagePalette(src image.Image, size uint8, norm Normalizer) color.Palette {
 	if norm == nil {
-		norm = StraightNormalizer{Q: RGBQuantizer{factor: size}}
+		norm = StraightNormalizer{Q: RGBQuantizer{Factor: size}}
 	}
 
 	bounds := src.Bounds()

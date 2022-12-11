@@ -28,7 +28,7 @@ func PixelateImage(src image.Image, mode pixelateMode, norm Normalizer) image.Im
 	dest := image.NewRGBA(bounds)
 
 	if norm == nil {
-		norm = StraightNormalizer{Q: RGBQuantizer{factor: 4}}
+		norm = StraightNormalizer{Q: RGBQuantizer{Factor: 4}}
 	}
 
 	for y := 0; y < bounds.Max.Y; y += square {
@@ -81,7 +81,7 @@ func ConstrainImage(src image.Image, palette color.Palette, norm Normalizer) ima
 	dest := image.NewRGBA(bounds)
 
 	if norm == nil {
-		norm = StraightNormalizer{Q: RGBQuantizer{factor: 4}}
+		norm = StraightNormalizer{Q: RGBQuantizer{Factor: 4}}
 	}
 
 	for y := 0; y < bounds.Max.Y; y += square {

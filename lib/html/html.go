@@ -16,7 +16,7 @@ func noSpecialChars(r rune) rune {
 	if unicode.IsLetter(r) || unicode.IsNumber(r) || unicode.IsSpace(r) {
 		return r
 	}
-	if '-' == r || '#' == r || ':' == r || '.' == r {
+	if '-' == r || '#' == r || ':' == r || '.' == r || '(' == r || ')' == r {
 		return r
 	}
 	fmt.Println(fmt.Sprintf("invalid: %d %c", r, r))
