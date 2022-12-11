@@ -140,13 +140,13 @@ func initGui() {
 		}
 		switch algorithm {
 		case "average":
-			b2 := pkg.ConstrainImage(img, palette)
+			b2 := pkg.ConstrainImage(img, palette, nil)
 			renderImageBuffer(b2, doc)
 		case "normalize":
-			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize)
+			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize, nil)
 			renderImageBuffer(b2, doc)
 		case "pixelate":
-			b2 := pkg.PixelateImage(img, pkg.ModePixelate)
+			b2 := pkg.PixelateImage(img, pkg.ModePixelate, nil)
 			renderImageBuffer(b2, doc)
 		default:
 			fmt.Println("ignoring the unknown algo", algo)
