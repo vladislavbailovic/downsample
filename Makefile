@@ -17,3 +17,16 @@ public_html/assets/downsample.wasm: Makefile
 
 build: public_html/assets/wasm_exec.js public_html/assets/downsample.wasm Makefile
 	@echo "Done"
+
+
+bench:
+	go test -bench=. -run=^Nope_ -benchmem
+
+profile:
+	go test -bench=. -run=^Nope_ -memprofile=mem.prof -cpuprofile=cpu.prof -benchtime=10s
+
+profile-memory: profile
+	go tool pprof mem.prof
+
+profile-cpu: profile
+	go tool pprof cpu.prof
