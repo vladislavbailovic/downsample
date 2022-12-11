@@ -1,5 +1,9 @@
 GOFILES=$(shell find . -type f -name '*.go')
 
+clitest:
+	@-rm *.jpg
+	go run .
+
 test:
 	go test downsample/pkg/...
 	cd lib && GOOS=js GOARCH=wasm go test ./...

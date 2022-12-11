@@ -32,7 +32,7 @@ func printPaletteImage(p color.Palette, paletteFname string) {
 	if len(p) == 0 {
 		file := filepath.Join("testdata", "sample.jpg")
 		bfr := pkg.FromJPEG(file)
-		p = pkg.ImagePalette(bfr, 12)
+		p = pkg.ImagePalette(bfr, 12, nil)
 	}
 
 	edit := pkg.ToPaletteImage(p, 50)
@@ -45,12 +45,12 @@ func printAveragedImage(palette color.Palette) {
 	outputFname := "average-with-palette.jpg"
 	paletteFname := "supplied-palette.jpg"
 	if len(palette) == 0 {
-		palette = pkg.ImagePalette(bfr, 12)
+		palette = pkg.ImagePalette(bfr, 12, nil)
 		outputFname = "average-image-palette.jpg"
 		paletteFname = "image-palette.jpg"
 	}
 
-	b2 := pkg.ConstrainImage(bfr, palette)
+	b2 := pkg.ConstrainImage(bfr, palette, nil)
 	ToJPEGFile(b2, outputFname)
 	printPaletteImage(palette, paletteFname)
 }
@@ -58,14 +58,14 @@ func printAveragedImage(palette color.Palette) {
 func printHarsherPixelatedImage() {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := pkg.FromJPEG(file)
-	b2 := pkg.PixelateImage(bfr, pkg.ModeAndNormalize)
+	b2 := pkg.PixelateImage(bfr, pkg.ModeAndNormalize, nil)
 	ToJPEGFile(b2, "harsher.jpg")
 }
 
 func printPixelatedImage() {
 	file := filepath.Join("testdata", "sample.jpg")
 	bfr := pkg.FromJPEG(file)
-	b2 := pkg.PixelateImage(bfr, pkg.ModePixelate)
+	b2 := pkg.PixelateImage(bfr, pkg.ModePixelate, nil)
 	ToJPEGFile(b2, "pixelated.jpg")
 }
 

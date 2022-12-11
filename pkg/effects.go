@@ -22,10 +22,14 @@ const (
 	ModeAndNormalize pixelateMode = iota
 )
 
-func PixelateImage(src image.Image, mode pixelateMode) image.Image {
+func PixelateImage(src image.Image, mode pixelateMode, norm Normalizer) image.Image {
 	square := squareSize
 	bounds := src.Bounds()
 	dest := image.NewRGBA(bounds)
+
+	if norm == nil {
+		norm = StraightNormalizer{Q: RGBQuantizer{factor: 4}}
+	}
 
 	for y := 0; y < bounds.Max.Y; y += square {
 		for x := 0; x < bounds.Max.X; x += square {
@@ -48,7 +52,7 @@ func PixelateImage(src image.Image, mode pixelateMode) image.Image {
 						p = append(p, px)
 					}
 				}
-				normalized = normalizeColors_RGBA(p, 4)[0]
+				normalized = norm.Normalize(p, 4)[0]
 			} else {
 				normalized = src.At(x, y)
 			}
@@ -71,10 +75,14 @@ func PixelateImage(src image.Image, mode pixelateMode) image.Image {
 	return dest
 }
 
-func ConstrainImage(src image.Image, palette color.Palette) image.Image {
+func ConstrainImage(src image.Image, palette color.Palette, norm Normalizer) image.Image {
 	square := squareSize
 	bounds := src.Bounds()
 	dest := image.NewRGBA(bounds)
+
+	if norm == nil {
+		norm = StraightNormalizer{Q: RGBQuantizer{factor: 4}}
+	}
 
 	for y := 0; y < bounds.Max.Y; y += square {
 		for x := 0; x < bounds.Max.X; x += square {
@@ -95,7 +103,7 @@ func ConstrainImage(src image.Image, palette color.Palette) image.Image {
 				}
 			}
 
-			normalized := normalizeColors_RGBA(p, 4)[0]
+			normalized := norm.Normalize(p, 4)[0]
 			closest := palette.Convert(normalized)
 			for i := 0; i < square; i++ {
 				for j := 0; j < square; j++ {

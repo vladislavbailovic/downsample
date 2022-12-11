@@ -24,7 +24,11 @@ func FromJPEG(imgfile string) image.Image {
 	return img
 }
 
-func ImagePalette(src image.Image, size uint8) color.Palette {
+func ImagePalette(src image.Image, size uint8, norm Normalizer) color.Palette {
+	if norm == nil {
+		norm = StraightNormalizer{Q: RGBQuantizer{factor: size}}
+	}
+
 	bounds := src.Bounds()
 	all := make(color.Palette, 0, bounds.Max.X*bounds.Max.Y)
 	for y := 0; y < bounds.Max.Y; y++ {
@@ -32,7 +36,7 @@ func ImagePalette(src image.Image, size uint8) color.Palette {
 			all = append(all, src.At(x, y))
 		}
 	}
-	return normalizeColors_RGBA(all, size)
+	return norm.Normalize(all, size)
 }
 
 func ToPaletteImage(p color.Palette, tileSize int) image.Image {
