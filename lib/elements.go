@@ -204,16 +204,19 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 
 	input.Listen("change", func() bool {
 		cs := input.ref.Get("value").String()[1:]
-		rs, err := strconv.ParseInt(cs[0:2], 16, 8)
+		rs, err := strconv.ParseInt(cs[0:2], 16, 16)
 		if err != nil {
+			fmt.Println(fmt.Sprintf("unable to parse int from %s: %s (%s)", cs[0:2], err, cs))
 			return true
 		}
-		gs, err := strconv.ParseInt(cs[2:4], 16, 8)
+		gs, err := strconv.ParseInt(cs[2:4], 16, 16)
 		if err != nil {
+			fmt.Println(fmt.Sprintf("unable to parse int from %s: %s (%s)", cs[2:4], err, cs))
 			return true
 		}
-		bs, err := strconv.ParseInt(cs[4:6], 16, 8)
+		bs, err := strconv.ParseInt(cs[4:6], 16, 16)
 		if err != nil {
+			fmt.Println(fmt.Sprintf("unable to parse int from %s: %s (%s)", cs[4:6], err, cs))
 			return true
 		}
 		px := color.RGBA{R: uint8(rs), G: uint8(gs), B: uint8(bs), A: 0xFF}
