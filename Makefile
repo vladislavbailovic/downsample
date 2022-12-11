@@ -14,12 +14,9 @@ cover: test
 
 public_html/assets/wasm_exec.js: Makefile
 	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" public_html/assets/
-	# cp "$(shell tinygo env TINYGOROOT)/targets/wasm_exec.js" public_html/assets/
 
 public_html/assets/downsample.wasm: Makefile $(GOFILES)
-	# cd lib && GOOS=js GOARCH=wasm go build -o ../public_html/assets/downsample.wasm
 	cd lib && GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o ../public_html/assets/downsample.wasm
-	# cd lib && tinygo build -o ../public_html/assets/downsample.wasm -target wasm
 
 build: public_html/assets/wasm_exec.js public_html/assets/downsample.wasm Makefile
 	@echo "Done"
