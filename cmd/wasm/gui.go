@@ -1,7 +1,7 @@
 package main
 
 import (
-	"downsample/lib/html"
+	"downsample/cmd/wasm/html"
 	"downsample/pkg"
 	"fmt"
 	"image"

@@ -6,7 +6,7 @@ clitest:
 
 test:
 	go test downsample/pkg/...
-	cd lib && GOOS=js GOARCH=wasm go test ./...
+	cd cmd/wasm && GOOS=js GOARCH=wasm go test ./...
 
 cover: test
 	go test ./... -coverprofile=coverage.out
@@ -16,7 +16,7 @@ public_html/assets/wasm_exec.js: Makefile
 	cp "$(shell go env GOROOT)/misc/wasm/wasm_exec.js" public_html/assets/
 
 public_html/assets/downsample.wasm: Makefile $(GOFILES)
-	cd lib && GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o ../public_html/assets/downsample.wasm
+	cd cmd/wasm && GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o ../../public_html/assets/downsample.wasm
 
 build: public_html/assets/wasm_exec.js public_html/assets/downsample.wasm Makefile
 	@echo "Done"
