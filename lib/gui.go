@@ -8,11 +8,6 @@ import (
 	"syscall/js"
 )
 
-const (
-	elInput  htmlAttributeValue = "input-file"
-	elOutput htmlAttributeValue = "output"
-)
-
 func getSource(doc js.Value) image.Image {
 	data := doc.Call("createElement", "canvas")
 	ctx := data.Call("getContext", "2d")
