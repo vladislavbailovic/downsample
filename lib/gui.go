@@ -60,11 +60,11 @@ func renderImageBuffer(img image.Image, doc js.Value) {
 	pixels := make([]byte, 0, bounds.Max.X*bounds.Max.Y*4)
 	for y := 0; y < bounds.Max.Y; y++ {
 		for x := 0; x < bounds.Max.X; x++ {
-			r, g, b, a := img.At(x, y).RGBA()
+			r, g, b, _ := img.At(x, y).RGBA()
 			pixels = append(pixels, uint8(r/256))
 			pixels = append(pixels, uint8(g/256))
 			pixels = append(pixels, uint8(b/256))
-			pixels = append(pixels, uint8(a/256))
+			pixels = append(pixels, 0xFF)
 		}
 	}
 	source := js.Global().Get("Uint8ClampedArray").New(
