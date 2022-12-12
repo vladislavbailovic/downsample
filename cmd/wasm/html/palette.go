@@ -142,7 +142,6 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 }
 
 func (x *paletteElement) createPaletteOpsElement(document js.Value) js.Value {
-	fmt.Println("creating ops element")
 	wrapper := htmlElement{
 		tag:     tagName("div"),
 		classes: []attributeValue{"operations"},
@@ -170,6 +169,16 @@ func (x *paletteElement) createPaletteOpsElement(document js.Value) js.Value {
 		return true
 	})
 	w.Call("append", load.Create(document))
+
+	rnd := htmlElement{
+		tag:  tagName("button"),
+		text: innerText("Random"),
+	}
+	rnd.Listen("click", func() bool {
+		fireEvent("downsample:palette:random", document)
+		return true
+	})
+	w.Call("append", rnd.Create(document))
 
 	return w
 }
