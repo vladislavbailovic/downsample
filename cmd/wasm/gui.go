@@ -226,9 +226,6 @@ func initGui() {
 	))
 	doc.Call("addEventListener", "downsample:palette:random", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
-			// palette := color.Palette{
-			// 	color.RGBA{R: 0xba, G: 0xda, B: 0x55, A: 0xff},
-			// }
 			newPalette := make(color.Palette, newSize)
 			for i := 0; i < newSize; i++ {
 				newPalette[i] = color.RGBA{

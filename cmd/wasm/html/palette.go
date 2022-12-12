@@ -3,6 +3,7 @@ package html
 import (
 	"fmt"
 	"image/color"
+	"math/rand"
 	"strconv"
 	"syscall/js"
 )
@@ -86,6 +87,10 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 		tag:  tagName("button"),
 		text: innerText("x"),
 	}
+	random := htmlElement{
+		tag:  tagName("button"),
+		text: innerText("r"),
+	}
 
 	w := wrapper.Create(document)
 	c := control.Create(document)
@@ -133,8 +138,27 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 	})
 	r := remove.Create(document)
 
+	random.Listen("click", func() bool {
+		newColor := color.RGBA{
+			R: uint8(rand.Float32() * 0xFF),
+			G: uint8(rand.Float32() * 0xFF),
+			B: uint8(rand.Float32() * 0xFF),
+			A: 0xff,
+		}
+		for idx, px := range x.palette {
+			if px == clr {
+				x.palette[idx] = newColor
+				break
+			}
+		}
+		fireEvent("downsample:ui", document)
+		return true
+	})
+	rnd := random.Create(document)
+
 	c.Call("append", i)
 	c.Call("append", r)
+	c.Call("append", rnd)
 
 	w.Call("append", c)
 
