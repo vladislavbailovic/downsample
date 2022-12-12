@@ -24,16 +24,21 @@ type Normalizer struct {
 	quantKind pkg.QuantizerType
 	factor    int
 
-	norm  htmlElement
-	quant htmlElement
-	fct   htmlElement
+	wrapper htmlElement
+	norm    htmlElement
+	quant   htmlElement
+	fct     htmlElement
 }
 
 func NewNormalizer() *Normalizer {
 	return &Normalizer{
 		factor: 5,
-		norm:   htmlElement{tag: tagName("select")},
-		quant:  htmlElement{tag: tagName("select")},
+		wrapper: htmlElement{
+			tag:     tagName("div"),
+			classes: []attributeValue{"normalizer"},
+		},
+		norm:  htmlElement{tag: tagName("select")},
+		quant: htmlElement{tag: tagName("select")},
 		fct: htmlElement{
 			tag: tagName("input"),
 			params: map[attributeName]attributeValue{
@@ -46,11 +51,7 @@ func NewNormalizer() *Normalizer {
 }
 
 func (x *Normalizer) Create(document js.Value) js.Value {
-	wrapper := htmlElement{
-		tag:     tagName("div"),
-		classes: []attributeValue{"normalizer"},
-	}
-	w := wrapper.Create(document)
+	w := x.wrapper.Create(document)
 
 	norm := x.createNormalizer(document)
 	w.Call("append", norm)
