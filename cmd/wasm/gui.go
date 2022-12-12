@@ -92,12 +92,14 @@ func initGui() {
 
 	palette := color.Palette{
 		color.RGBA{R: 0xba, G: 0xda, B: 0x55, A: 0xff},
-		color.RGBA{R: 0x0d, G: 0xea, B: 0xd0, A: 0xff},
+		color.RGBA{R: 0xde, G: 0xad, B: 0x00, A: 0xff},
+		color.RGBA{R: 0x00, G: 0xde, B: 0xaf, A: 0xff},
 	}
 	algorithm := "pixelate"
 	var factor byte = 5
 	quantizer = pkg.RGBQuantizer{Factor: factor}
 	normalizer = pkg.StraightNormalizer{Q: quantizer}
+	newSize := len(palette)
 
 	root := html.Root.Create(doc)
 	controls := html.Controls.Create(doc)
@@ -168,6 +170,7 @@ func initGui() {
 		algorithm = algo.GetAlgorithm()
 		pkg.SetTileSize(tile.GetSize())
 		palette = plt.GetPalette()
+		newSize = plt.GetNewSize()
 		factor = norm.GetFactor()
 
 		switch norm.GetQuantizerType() {
@@ -206,6 +209,18 @@ func initGui() {
 	doc.Call("addEventListener", "downsample:render", js.FuncOf(
 		func(this js.Value, args []js.Value) interface{} {
 			render()
+			return true
+		},
+	))
+	doc.Call("addEventListener", "downsample:palette:image", js.FuncOf(
+		func(this js.Value, args []js.Value) interface{} {
+			if img == nil {
+				return false
+			}
+			fmt.Println("picking up colors:", newSize)
+			newPalette := pkg.ImagePalette(img, uint8(newSize), normalizer)
+			plt.ReplacePalette(newPalette)
+			renderUI()
 			return true
 		},
 	))

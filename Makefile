@@ -21,6 +21,9 @@ public_html/assets/downsample.wasm: Makefile $(GOFILES)
 build: public_html/assets/wasm_exec.js public_html/assets/downsample.wasm Makefile
 	@echo "Done"
 
+run: build
+	go run downsample/cmd/server
+
 
 bench:
 	go test -bench=. -run=^Nope_ -benchmem

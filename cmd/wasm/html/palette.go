@@ -9,9 +9,11 @@ import (
 
 type paletteElement struct {
 	palette color.Palette
+	newSize int
 	wrapper htmlElement
 	colors  []htmlElement
 	add     htmlElement
+	count   htmlElement
 }
 
 func NewPalette(palette color.Palette) *paletteElement {
@@ -19,6 +21,7 @@ func NewPalette(palette color.Palette) *paletteElement {
 	p := paletteElement{
 		palette: palette,
 		colors:  colors,
+		newSize: len(palette),
 		wrapper: htmlElement{
 			tag:     tagName("div"),
 			classes: []attributeValue{"palette"},
@@ -27,6 +30,14 @@ func NewPalette(palette color.Palette) *paletteElement {
 			tag:     tagName("button"),
 			classes: []attributeValue{"add"},
 			text:    innerText("Add"),
+		},
+		count: htmlElement{
+			tag: tagName("input"),
+			params: map[attributeName]attributeValue{
+				"type": "number",
+				"min":  "2",
+				"max":  "16",
+			},
 		},
 	}
 	return &p
@@ -45,8 +56,11 @@ func (x *paletteElement) Create(document js.Value) js.Value {
 		return true
 	})
 	a := x.add.Create(document)
-
 	w.Call("append", a)
+
+	ops := x.createPaletteOpsElement(document)
+	w.Call("append", ops)
+
 	return w
 }
 
@@ -127,6 +141,39 @@ func (x *paletteElement) makeColorElement(clr color.Color, document js.Value) js
 	return w
 }
 
+func (x *paletteElement) createPaletteOpsElement(document js.Value) js.Value {
+	fmt.Println("creating ops element")
+	wrapper := htmlElement{
+		tag:     tagName("div"),
+		classes: []attributeValue{"operations"},
+	}
+	w := wrapper.Create(document)
+
+	x.count.params[attributeName("value")] = attributeValue(
+		fmt.Sprintf("%d", x.newSize))
+	x.count.Listen("change", func() bool {
+		raw := x.count.ref.Get("value").String()
+		if count, err := strconv.Atoi(raw); err == nil {
+			x.newSize = count
+			fireEvent("downsample:ui", document)
+		}
+		return true
+	})
+	w.Call("append", x.count.Create(document))
+
+	load := htmlElement{
+		tag:  tagName("button"),
+		text: innerText("Load from image"),
+	}
+	load.Listen("click", func() bool {
+		fireEvent("downsample:palette:image", document)
+		return true
+	})
+	w.Call("append", load.Create(document))
+
+	return w
+}
+
 func (x *paletteElement) Hide() {
 	x.wrapper.Hide()
 }
@@ -134,6 +181,15 @@ func (x *paletteElement) Show() {
 	x.wrapper.ref.Get("style").Set("display", "flex")
 }
 
+func (x *paletteElement) ReplacePalette(palette color.Palette) {
+	x.palette = palette
+	x.newSize = len(palette)
+}
+
 func (x *paletteElement) GetPalette() color.Palette {
 	return x.palette
+}
+
+func (x *paletteElement) GetNewSize() int {
+	return x.newSize
 }
