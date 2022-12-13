@@ -218,7 +218,7 @@ func initGui() {
 			if img == nil {
 				return false
 			}
-			newPalette := pkg.ImagePalette(img, uint8(newSize), normalizer)
+			newPalette := pkg.ImagePalette(img, uint8(newSize), nil)
 			plt.ReplacePalette(newPalette)
 			renderUI()
 			return true
