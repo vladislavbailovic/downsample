@@ -99,6 +99,8 @@ func (x AverageNormalizer) Normalize(pxl color.Palette, size uint8) color.Palett
 	return palette
 }
 
+/// Distribution normalizer is used as a default image palette
+/// extraction normalizer, to ensure a decent palette spread.
 type DistributionNormalizer struct {
 	Q      Quantizer
 	Spread float64
@@ -138,7 +140,12 @@ func (x DistributionNormalizer) Normalize(pxl color.Palette, size uint8) color.P
 	return palette
 }
 
-func (x DistributionNormalizer) distance(c1 color.Color, c2 color.Color) float64 { // in pct
+/// Color distance calculus utility method.
+/// Adapted from https://stackoverflow.com/a/52562886
+/// Has a whole bunch of magic numbers, which is not great.
+/// However, yields satisfactory results and returns percentages
+/// which works well for our purpose here.
+func (x DistributionNormalizer) distance(c1 color.Color, c2 color.Color) float64 {
 	r1, g1, b1, _ := c1.RGBA()
 	r2, g2, b2, _ := c2.RGBA()
 
@@ -160,6 +167,8 @@ func (x DistributionNormalizer) isTooClose(subject color.Color, palette color.Pa
 	return x.isTooClose_Diff(subject, palette)
 }
 
+/// Uses distance calculus to compare colors and ensure
+/// enough spread in the final palette
 func (x DistributionNormalizer) isTooClose_Diff(subject color.Color, palette color.Palette) bool {
 	for _, to := range palette {
 		dist := x.distance(subject, to)
@@ -169,6 +178,10 @@ func (x DistributionNormalizer) isTooClose_Diff(subject color.Color, palette col
 	}
 	return false
 }
+
+/// Dead simple spread calculus - mostly _good enough_, although
+/// the distance calculation yields better results most of the time.
+/// Still, leaving this in as a simpler and likely faster approach.
 func (x DistributionNormalizer) isTooClose_Rgb(subject color.Color, palette color.Palette) bool {
 	rs, gs, bs, _ := subject.RGBA()
 	for _, to := range palette {
