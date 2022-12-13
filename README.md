@@ -36,7 +36,6 @@ $ make test
 
 ## TODO
 
-- [ ] Load palette from image - ensure colors are spread out
 - [ ] Serve self-contained resources
 - [ ] Improve UI
 - [ ] ASCII 👀
