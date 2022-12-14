@@ -2,6 +2,7 @@ package main
 
 import (
 	"downsample/pkg"
+	"downsample/pkg/asciify"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -10,22 +11,28 @@ import (
 )
 
 func main() {
-	palette := color.Palette{
-		color.RGBA{R: 0xFF, G: 0xB7, B: 0x03, A: 0xFF},
-		color.RGBA{R: 0xFB, G: 0x85, B: 0x00, A: 0xFF},
-		color.RGBA{R: 0xD0, G: 0x00, B: 0x00, A: 0xFF},
-		color.RGBA{R: 0x8E, G: 0xCA, B: 0xE6, A: 0xFF},
-		color.RGBA{R: 0x02, G: 0x30, B: 0x47, A: 0xFF},
-		color.RGBA{R: 0x12, G: 0x40, B: 0x57, A: 0xFF},
-		color.RGBA{R: 0x22, G: 0x50, B: 0x68, A: 0xFF},
-		color.RGBA{R: 0x21, G: 0x9E, B: 0xBC, A: 0xFF},
-		color.RGBA{R: 0x2A, G: 0x9D, B: 0x8F, A: 0xFF},
-		color.RGBA{R: 0xCC, G: 0xC5, B: 0xB9, A: 0xFF},
-	}
-	printAveragedImage(palette)
-	printAveragedImage(color.Palette{})
-	printHarsherPixelatedImage()
-	printPixelatedImage()
+	asciifyImage()
+	// palette := color.Palette{
+	// 	color.RGBA{R: 0xFF, G: 0xB7, B: 0x03, A: 0xFF},
+	// 	color.RGBA{R: 0xFB, G: 0x85, B: 0x00, A: 0xFF},
+	// 	color.RGBA{R: 0xD0, G: 0x00, B: 0x00, A: 0xFF},
+	// 	color.RGBA{R: 0x8E, G: 0xCA, B: 0xE6, A: 0xFF},
+	// 	color.RGBA{R: 0x02, G: 0x30, B: 0x47, A: 0xFF},
+	// 	color.RGBA{R: 0x12, G: 0x40, B: 0x57, A: 0xFF},
+	// 	color.RGBA{R: 0x22, G: 0x50, B: 0x68, A: 0xFF},
+	// 	color.RGBA{R: 0x21, G: 0x9E, B: 0xBC, A: 0xFF},
+	// 	color.RGBA{R: 0x2A, G: 0x9D, B: 0x8F, A: 0xFF},
+	// 	color.RGBA{R: 0xCC, G: 0xC5, B: 0xB9, A: 0xFF},
+	// }
+	// printAveragedImage(palette)
+	// printAveragedImage(color.Palette{})
+	// printHarsherPixelatedImage()
+	// printPixelatedImage()
+}
+
+func asciifyImage() {
+	file := filepath.Join("testdata", "sample.jpg")
+	asciify.Asciify(file, asciify.AsciiReplacements)
 }
 
 func printPaletteImage(p color.Palette, paletteFname string) {

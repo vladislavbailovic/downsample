@@ -5,9 +5,11 @@ import (
 	"image"
 	"image/color"
 	"image/jpeg"
+	"image/png"
 	"os"
 )
 
+// TODO: refactor
 func FromJPEG(imgfile string) image.Image {
 	fp, err := os.Open(imgfile)
 	if err != nil {
@@ -19,6 +21,23 @@ func FromJPEG(imgfile string) image.Image {
 	img, err := jpeg.Decode(fp)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "unable to decode JPEG: %v", err)
+	}
+
+	return img
+}
+
+// TODO: refactor
+func FromPNG(imgfile string) image.Image {
+	fp, err := os.Open(imgfile)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unable to open image: %v", err)
+		return nil
+	}
+	defer fp.Close()
+
+	img, err := png.Decode(fp)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "unable to decode PNG: %v", err)
 	}
 
 	return img
