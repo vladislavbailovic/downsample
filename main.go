@@ -3,6 +3,7 @@ package main
 import (
 	"downsample/pkg"
 	"downsample/pkg/asciify"
+	"fmt"
 	"image"
 	"image/color"
 	"image/jpeg"
@@ -36,7 +37,7 @@ func asciifyImage() {
 		Replacements: asciify.UnicodeReplacements,
 		Replacer:     &asciify.ConsoleReplacer{},
 	}
-	a.Asciify(file)
+	fmt.Println(a.Asciify(file))
 }
 
 func printPaletteImage(p color.Palette, paletteFname string) {

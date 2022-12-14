@@ -26,9 +26,10 @@ type Asciifier struct {
 type replacer interface {
 	initialize([]Replacement)
 	replace(color.Palette) (string, color.Color)
+	wrap(string) string
 }
 
-func (a *Asciifier) Asciify(imagePath string) {
+func (a *Asciifier) Asciify(imagePath string) string {
 	a.Replacer.initialize(a.Replacements)
 
 	bfr := pkg.FromJPEG(imagePath)
@@ -61,7 +62,7 @@ func (a *Asciifier) Asciify(imagePath string) {
 		}
 		rows = append(rows, strings.Join(cols, ""))
 	}
-	fmt.Println(strings.Join(rows, "\n"))
+	return a.Replacer.wrap(strings.Join(rows, "\n"))
 }
 
 type PlainReplacer struct {
@@ -70,10 +71,15 @@ type PlainReplacer struct {
 	rplMap     map[color.Color]string
 }
 
+func (x *PlainReplacer) wrap(res string) string {
+	return res
+}
+
 func (x *PlainReplacer) initialize(rpl []Replacement) {
 	x.rplPalette, x.rplMap = makePaletteReplacementTable(rpl)
 	x.norm = pkg.DistributionNormalizer{Q: pkg.RGBQuantizer{Factor: 12}, Spread: 12.0}
 }
+
 func (x *PlainReplacer) replace(p color.Palette) (string, color.Color) {
 	normalized := x.norm.Normalize(p, 4)[0]
 	closest := x.rplPalette.Convert(normalized)
