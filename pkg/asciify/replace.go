@@ -19,9 +19,16 @@ func makePaletteReplacementTable(replacements []Replacement) (color.Palette, map
 	return palette, rplMap
 }
 
+const (
+	_DefaultTileWidth = 7
+	// _DefaultTileHeight = 14
+)
+
 type Asciifier struct {
 	Replacements []Replacement
 	Replacer     replacer
+	TileWidth    int
+	TileHeight   int
 }
 
 type replacer interface {
@@ -30,14 +37,28 @@ type replacer interface {
 	wrap(string) string
 }
 
+func (a *Asciifier) getTileWidth() int {
+	if a.TileWidth != 0 {
+		return a.TileWidth
+	}
+	return _DefaultTileWidth
+}
+
+func (a *Asciifier) getTileHeight() int {
+	if a.TileHeight != 0 {
+		return a.TileHeight
+	}
+	return 2 * a.getTileWidth()
+}
+
 func (a *Asciifier) Asciify(imagePath string) string {
 	a.Replacer.initialize(a.Replacements)
 
 	bfr := pkg.FromJPEG(imagePath)
 
 	b := bfr.Bounds()
-	xincr := 7
-	yincr := 14
+	xincr := a.getTileWidth()
+	yincr := a.getTileHeight()
 	rows := make([]string, 0, b.Max.Y/yincr)
 	for y := 0; y < b.Max.Y; y += yincr {
 		cols := make([]string, 0, b.Max.X/xincr)

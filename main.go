@@ -36,6 +36,7 @@ func asciifyImage() {
 	a := asciify.Asciifier{
 		Replacements: asciify.AsciiReplacements,
 		Replacer:     &asciify.HtmlReplacer{},
+		TileWidth:    3,
 	}
 	fmt.Println(a.Asciify(file))
 }
