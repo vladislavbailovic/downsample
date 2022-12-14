@@ -18,11 +18,20 @@ func makePaletteReplacementTable(replacements []Replacement) (color.Palette, map
 	return palette, rplMap
 }
 
-func Asciify(imagePath string, rpl []Replacement) {
-	palette, rplMap := makePaletteReplacementTable(rpl)
+type Asciifier struct {
+	Replacements []Replacement
+	Replacer     replacer
+}
+
+type replacer interface {
+	initialize([]Replacement)
+	replace(color.Palette) (string, color.Color)
+}
+
+func (a *Asciifier) Asciify(imagePath string) {
+	a.Replacer.initialize(a.Replacements)
 
 	bfr := pkg.FromJPEG(imagePath)
-	norm := pkg.DistributionNormalizer{Q: pkg.RGBQuantizer{Factor: 12}, Spread: 12.0}
 
 	b := bfr.Bounds()
 	xincr := 7
@@ -47,13 +56,87 @@ func Asciify(imagePath string, rpl []Replacement) {
 					p = append(p, px)
 				}
 			}
-
-			normalized := norm.Normalize(p, 4)[0]
-			closest := palette.Convert(normalized)
-
-			cols = append(cols, rplMap[closest])
+			rpl, _ := a.Replacer.replace(p)
+			cols = append(cols, rpl)
 		}
 		rows = append(rows, strings.Join(cols, ""))
 	}
 	fmt.Println(strings.Join(rows, "\n"))
+}
+
+type PlainReplacer struct {
+	norm       pkg.Normalizer
+	rplPalette color.Palette
+	rplMap     map[color.Color]string
+}
+
+func (x *PlainReplacer) initialize(rpl []Replacement) {
+	x.rplPalette, x.rplMap = makePaletteReplacementTable(rpl)
+	x.norm = pkg.DistributionNormalizer{Q: pkg.RGBQuantizer{Factor: 12}, Spread: 12.0}
+}
+func (x *PlainReplacer) replace(p color.Palette) (string, color.Color) {
+	normalized := x.norm.Normalize(p, 4)[0]
+	closest := x.rplPalette.Convert(normalized)
+
+	return x.rplMap[closest], normalized
+}
+
+type ConsoleReplacer struct {
+	PlainReplacer
+	palette color.Palette
+	colors  map[color.Color]int
+}
+
+const (
+	AnsiBlack = iota + 30
+	AnsiRed
+	AnsiGreen
+	AnsiYellow
+	AnsiBlue
+	AnsiMagenta
+	AnsiCyan
+	AnsiWhite
+)
+const (
+	AnsiBrightBlack = iota + 90
+	AnsiBrightRed
+	AnsiBrightGreen
+	AnsiBrightYellow
+	AnsiBrightBlue
+	AnsiBrightMagenta
+	AnsiBrightCyan
+	AnsiBrightWhite
+)
+
+func (x *ConsoleReplacer) initialize(rpl []Replacement) {
+	x.PlainReplacer.initialize(rpl)
+	x.colors = map[color.Color]int{
+		color.RGBA{A: 0xFF, R: 0, G: 0, B: 0}:       AnsiBlack,
+		color.RGBA{A: 0xFF, R: 170, G: 0, B: 0}:     AnsiRed,
+		color.RGBA{A: 0xFF, R: 0, G: 170, B: 0}:     AnsiGreen,
+		color.RGBA{A: 0xFF, R: 170, G: 85, B: 0}:    AnsiYellow,
+		color.RGBA{A: 0xFF, R: 0, G: 0, B: 170}:     AnsiBlue,
+		color.RGBA{A: 0xFF, R: 170, G: 0, B: 170}:   AnsiMagenta,
+		color.RGBA{A: 0xFF, R: 0, G: 170, B: 170}:   AnsiCyan,
+		color.RGBA{A: 0xFF, R: 170, G: 170, B: 170}: AnsiMagenta,
+
+		color.RGBA{A: 0xFF, R: 85, G: 85, B: 85}:    AnsiBrightBlack,
+		color.RGBA{A: 0xFF, R: 255, G: 85, B: 85}:   AnsiBrightRed,
+		color.RGBA{A: 0xFF, R: 85, G: 255, B: 85}:   AnsiBrightGreen,
+		color.RGBA{A: 0xFF, R: 255, G: 255, B: 85}:  AnsiBrightYellow,
+		color.RGBA{A: 0xFF, R: 85, G: 85, B: 255}:   AnsiBrightBlue,
+		color.RGBA{A: 0xFF, R: 255, G: 85, B: 255}:  AnsiBrightMagenta,
+		color.RGBA{A: 0xFF, R: 85, G: 255, B: 255}:  AnsiBrightCyan,
+		color.RGBA{A: 0xFF, R: 255, G: 255, B: 255}: AnsiBrightBlue,
+	}
+	for c, _ := range x.colors {
+		x.palette = append(x.palette, c)
+	}
+}
+
+func (x *ConsoleReplacer) replace(p color.Palette) (string, color.Color) {
+	str, col := x.PlainReplacer.replace(p)
+	c := x.palette.Convert(col)
+	code := x.colors[c]
+	return fmt.Sprintf("\u001B[%dm%s\u001B[0m", code, str), col
 }

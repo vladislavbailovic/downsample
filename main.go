@@ -32,7 +32,11 @@ func main() {
 
 func asciifyImage() {
 	file := filepath.Join("testdata", "sample.jpg")
-	asciify.Asciify(file, asciify.AsciiReplacements)
+	a := asciify.Asciifier{
+		Replacements: asciify.AsciiReplacements,
+		Replacer:     &asciify.ConsoleReplacer{},
+	}
+	a.Asciify(file)
 }
 
 func printPaletteImage(p color.Palette, paletteFname string) {
