@@ -34,8 +34,8 @@ func main() {
 func asciifyImage() {
 	file := filepath.Join("testdata", "sample.jpg")
 	a := asciify.Asciifier{
-		Replacements: asciify.UnicodeReplacements,
-		Replacer:     &asciify.ConsoleReplacer{},
+		Replacements: asciify.AsciiReplacements,
+		Replacer:     &asciify.HtmlReplacer{},
 	}
 	fmt.Println(a.Asciify(file))
 }

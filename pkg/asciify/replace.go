@@ -4,6 +4,7 @@ import (
 	"downsample/pkg"
 	"fmt"
 	"image/color"
+	"image/color/palette"
 	"strings"
 )
 
@@ -145,4 +146,17 @@ func (x *ConsoleReplacer) replace(p color.Palette) (string, color.Color) {
 	c := x.palette.Convert(col)
 	code := x.colors[c]
 	return fmt.Sprintf("\u001B[%dm%s\u001B[0m", code, str), col
+}
+
+type HtmlReplacer struct {
+	PlainReplacer
+}
+
+func (x *HtmlReplacer) replace(p color.Palette) (string, color.Color) {
+	str, col := x.PlainReplacer.replace(p)
+	r, g, b, _ := color.Palette(palette.WebSafe).Convert(col).RGBA()
+	return fmt.Sprintf(`<span style="color: #%02x%02x%02x">%s</span>`, r/256, g/256, b/256, str), col
+}
+func (x *HtmlReplacer) wrap(s string) string {
+	return `<pre style="background: #000">` + s + "</pre>"
 }
