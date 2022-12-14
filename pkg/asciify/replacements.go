@@ -22,3 +22,10 @@ var AsciiReplacements []Replacement = []Replacement{
 	{Glyph: "|", Name: "pipe", Pct: 51.020408, Y: 130},
 	{Glyph: ";", Name: "semi", Pct: 20.918367, Y: 53},
 }
+
+var UnicodeReplacements []Replacement = []Replacement{
+	{Glyph: "\u00B7", Name: "middot", Pct: 10, Y: 25},
+	{Glyph: "\u2591", Name: "light", Pct: 20, Y: 51},
+	{Glyph: "\u2592", Name: "meduim", Pct: 50, Y: 127},
+	{Glyph: "\u2593", Name: "dark", Pct: 98, Y: 255},
+}

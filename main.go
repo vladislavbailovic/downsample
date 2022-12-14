@@ -33,7 +33,7 @@ func main() {
 func asciifyImage() {
 	file := filepath.Join("testdata", "sample.jpg")
 	a := asciify.Asciifier{
-		Replacements: asciify.AsciiReplacements,
+		Replacements: asciify.UnicodeReplacements,
 		Replacer:     &asciify.ConsoleReplacer{},
 	}
 	a.Asciify(file)
