@@ -38,7 +38,7 @@ func asciifyImage() {
 		Replacer:     &asciify.HtmlReplacer{},
 		TileWidth:    3,
 	}
-	fmt.Println(a.Asciify(file))
+	ToPlaintextFile(a.Asciify(file), "test.html")
 }
 
 func printPaletteImage(p color.Palette, paletteFname string) {
@@ -80,6 +80,18 @@ func printPixelatedImage() {
 	bfr := pkg.FromJPEG(file)
 	b2 := pkg.PixelateImage(bfr, pkg.ModePixelate, nil)
 	ToJPEGFile(b2, "pixelated.jpg")
+}
+
+func ToPlaintextFile(out string, imgpath string) error {
+	writer, err := os.Create(imgpath)
+	if err != nil {
+		return err
+	}
+	defer writer.Close()
+
+	fmt.Fprintf(writer, out)
+
+	return nil
 }
 
 func ToJPEGFile(edit image.Image, imgpath string) error {

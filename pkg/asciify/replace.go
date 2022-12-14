@@ -166,7 +166,7 @@ func (x *ConsoleReplacer) replace(p color.Palette) (string, color.Color) {
 	str, col := x.PlainReplacer.replace(p)
 	c := x.palette.Convert(col)
 	code := x.colors[c]
-	return fmt.Sprintf("\u001B[%dm%s\u001B[0m", code, str), col
+	return fmt.Sprintf("\u001B[%dm%s\u001B[0m", code, strings.Replace(str, "%", "%%", -1)), col
 }
 
 type HtmlReplacer struct {
@@ -176,7 +176,10 @@ type HtmlReplacer struct {
 func (x *HtmlReplacer) replace(p color.Palette) (string, color.Color) {
 	str, col := x.PlainReplacer.replace(p)
 	r, g, b, _ := color.Palette(palette.WebSafe).Convert(col).RGBA()
-	return fmt.Sprintf(`<span style="color: #%02x%02x%02x">%s</span>`, r/256, g/256, b/256, str), col
+	return fmt.Sprintf(
+		`<span style="color: #%02x%02x%02x">%s</span>`,
+		r/256, g/256, b/256,
+		strings.Replace(str, "%", "%%", -1)), col
 }
 func (x *HtmlReplacer) wrap(s string) string {
 	return `<pre style="background: #000">` + s + "</pre>"
