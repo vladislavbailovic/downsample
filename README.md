@@ -38,4 +38,3 @@ $ make test
 
 - [ ] Serve self-contained resources
 - [ ] Improve UI
-- [ ] ASCII 👀
