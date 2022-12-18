@@ -36,5 +36,6 @@ $ make test
 
 ## TODO
 
-- [ ] Serve self-contained resources
 - [ ] Improve UI
+- [ ] Support asciification in wasm
+- [ ] Add CLI

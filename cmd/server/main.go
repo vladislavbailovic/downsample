@@ -6,7 +6,9 @@ import (
 	_ "embed"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
+	"os"
 	"strings"
 )
 
@@ -57,14 +59,16 @@ func serveCompressed(next http.Handler) http.Handler {
 }
 
 func main() {
+	if len(os.Args) > 0 {
+		fd, err := os.Open(os.Args[1])
+		if err == nil {
+			if tmp, err := ioutil.ReadAll(fd); err == nil {
+				sampleImage = tmp
+			}
+		}
+		fd.Close()
+	}
 	http.ListenAndServe(":6660", serveCompressed(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-
-		// path, err := os.Getwd()
-		// if err != nil {
-		// 	fmt.Println(err)
-		// 	return
-		// }
-
 		if strings.Contains(r.URL.Path, ".wasm") {
 			w.Header().Set("Content-Type", "application/wasm")
 			w.Write(downsampleWasm)
