@@ -2,8 +2,8 @@ coverage.*
 *.jpg
 *.old
 /*.html
-public_html/assets/*.wasm
-public_html/assets/wasm_exec.js
+*.wasm
+wasm_exec.js
 /downsample
 /downsample.test
 *.prof

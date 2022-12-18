@@ -3,12 +3,22 @@ package main
 import (
 	"compress/gzip"
 	"compress/zlib"
+	_ "embed"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
+)
+
+var (
+	//go:embed public_html/assets/downsample.wasm
+	downsampleWasm []byte
+	//go:embed public_html/assets/wasm_exec.js
+	wasmLoader []byte
+	//go:embed public_html/index.html
+	indexHtml []byte
+	//go:embed public_html/sample.jpg
+	sampleImage []byte
 )
 
 type compressedWriter struct {
@@ -49,46 +59,26 @@ func serveCompressed(next http.Handler) http.Handler {
 func main() {
 	http.ListenAndServe(":6660", serveCompressed(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 
-		path, err := os.Getwd()
-		if err != nil {
-			fmt.Println(err)
-			return
-		}
+		// path, err := os.Getwd()
+		// if err != nil {
+		// 	fmt.Println(err)
+		// 	return
+		// }
 
 		if strings.Contains(r.URL.Path, ".wasm") {
-			fd, err := os.Open(filepath.Join(path, "public_html/assets/downsample.wasm"))
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
 			w.Header().Set("Content-Type", "application/wasm")
-			io.Copy(w, fd)
+			w.Write(downsampleWasm)
 		} else if strings.Contains(r.URL.Path, ".js") {
-			fd, err := os.Open(filepath.Join(path, "public_html/assets/wasm_exec.js"))
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
 			w.Header().Set("Content-Type", "text/javascript")
-			io.Copy(w, fd)
+			w.Write(wasmLoader)
 		} else if strings.Contains(r.URL.Path, ".jpg") {
-			fd, err := os.Open(filepath.Join(path, "public_html/sample.jpg"))
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
 			w.Header().Set("Content-Type", "image/jpeg")
-			io.Copy(w, fd)
+			w.Write(sampleImage)
 		} else if strings.Contains(r.URL.Path, "favicon") {
 			fmt.Println("ignoring favicon")
 		} else {
-			index, err := os.Open(filepath.Join(path, "public_html/index.html"))
-			if err != nil {
-				fmt.Println(err)
-				return
-			}
 			w.Header().Set("Content-Type", "text/html")
-			io.Copy(w, index)
+			w.Write(indexHtml)
 		}
 	})))
 }
