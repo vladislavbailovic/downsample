@@ -3,6 +3,7 @@ package asciify
 import (
 	"downsample/pkg"
 	"fmt"
+	"image"
 	"image/color"
 	"image/color/palette"
 	"strings"
@@ -51,10 +52,13 @@ func (a *Asciifier) getTileHeight() int {
 	return 2 * a.getTileWidth()
 }
 
-func (a *Asciifier) Asciify(imagePath string) string {
-	a.Replacer.initialize(a.Replacements)
-
+func (a *Asciifier) AsciifyFile(imagePath string) string {
 	bfr := pkg.FromJPEG(imagePath)
+	return a.Asciify(bfr)
+}
+
+func (a *Asciifier) Asciify(bfr image.Image) string {
+	a.Replacer.initialize(a.Replacements)
 
 	b := bfr.Bounds()
 	xincr := a.getTileWidth()
@@ -179,7 +183,7 @@ func (x *HtmlReplacer) replace(p color.Palette) (string, color.Color) {
 	return fmt.Sprintf(
 		`<span style="color: #%02x%02x%02x">%s</span>`,
 		r/256, g/256, b/256,
-		strings.Replace(str, "%", "%%", -1)), col
+		str), col
 }
 func (x *HtmlReplacer) wrap(s string) string {
 	return `<pre style="background: #000">` + s + "</pre>"

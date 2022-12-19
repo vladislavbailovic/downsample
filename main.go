@@ -38,7 +38,7 @@ func asciifyImage() {
 		Replacer:     &asciify.HtmlReplacer{},
 		TileWidth:    3,
 	}
-	ToPlaintextFile(a.Asciify(file), "test.html")
+	ToPlaintextFile(a.AsciifyFile(file), "test.html")
 }
 
 func printPaletteImage(p color.Palette, paletteFname string) {
