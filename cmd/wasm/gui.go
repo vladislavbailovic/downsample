@@ -231,6 +231,14 @@ func initGui() {
 			update()
 		}
 
+		if algorithm != pkg.Asciify {
+			norm.Show()
+			rpl.Hide()
+		} else {
+			norm.Hide()
+			rpl.Show()
+		}
+
 		render()
 	}
 	doc.Call("addEventListener", "downsample:ui", js.FuncOf(

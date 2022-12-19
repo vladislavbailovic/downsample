@@ -150,3 +150,11 @@ func (x *Normalizer) GetQuantizerType() pkg.QuantizerType {
 func (x *Normalizer) GetFactor() byte {
 	return byte(x.factor)
 }
+
+func (x *Normalizer) Show() {
+	x.wrapper.Show()
+}
+
+func (x *Normalizer) Hide() {
+	x.wrapper.Hide()
+}

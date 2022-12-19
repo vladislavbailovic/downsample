@@ -37,5 +37,4 @@ $ make test
 ## TODO
 
 - [ ] Improve UI
-- [ ] Support asciification in wasm
 - [ ] Add CLI

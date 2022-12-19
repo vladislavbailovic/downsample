@@ -68,3 +68,11 @@ func (x *Replacements) createReplacements(document js.Value) js.Value {
 func (x *Replacements) GetReplacementType() asciify.ReplacementsType {
 	return x.replacement
 }
+
+func (x *Replacements) Show() {
+	x.rpl.Show()
+}
+
+func (x *Replacements) Hide() {
+	x.rpl.Hide()
+}
