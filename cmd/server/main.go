@@ -59,7 +59,7 @@ func serveCompressed(next http.Handler) http.Handler {
 }
 
 func main() {
-	if len(os.Args) > 0 {
+	if len(os.Args) > 1 {
 		fd, err := os.Open(os.Args[1])
 		if err == nil {
 			if tmp, err := ioutil.ReadAll(fd); err == nil {
