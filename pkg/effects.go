@@ -1,11 +1,25 @@
 package pkg
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 )
 
 var squareSize int = 25
+
+type Algorithm int
+
+const (
+	Pixelate  Algorithm = iota
+	Normalize Algorithm = iota
+	Average   Algorithm = iota
+	Asciify   Algorithm = iota
+)
+
+func (x Algorithm) String() string {
+	return fmt.Sprintf("%d", x)
+}
 
 func GetTileSize() int {
 	return squareSize

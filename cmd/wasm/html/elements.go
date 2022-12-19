@@ -1,6 +1,7 @@
 package html
 
 import (
+	"downsample/pkg"
 	"fmt"
 	"strconv"
 	"syscall/js"
@@ -54,12 +55,19 @@ func (x *tileElement) GetSize() int {
 	return x.size
 }
 
+var algos map[pkg.Algorithm]string = map[pkg.Algorithm]string{
+	pkg.Pixelate:  "Pixelate",
+	pkg.Normalize: "Normalize",
+	pkg.Average:   "Average",
+	pkg.Asciify:   "Asciify",
+}
+
 type algoElement struct {
-	algorithm string
+	algorithm pkg.Algorithm
 	wrapper   htmlElement
 }
 
-func NewAlgo(algorithm string) *algoElement {
+func NewAlgo(algorithm pkg.Algorithm) *algoElement {
 	return &algoElement{
 		algorithm: algorithm,
 		wrapper: htmlElement{
@@ -71,20 +79,18 @@ func NewAlgo(algorithm string) *algoElement {
 
 func (x *algoElement) Create(document js.Value) js.Value {
 	x.wrapper.Listen("change", func() bool {
-		x.algorithm = x.wrapper.ref.Get("value").String()
-		fireEvent("downsample:ui", document)
+		raw := x.wrapper.ref.Get("value").String()
+		if alg, err := strconv.Atoi(raw); err == nil {
+			x.algorithm = pkg.Algorithm(alg)
+			fireEvent("downsample:ui", document)
+		}
 		return true
 	})
 	w := x.wrapper.Create(document)
 
-	algos := []string{
-		"pixelate",
-		"normalize",
-		"average",
-	}
-	for _, a := range algos {
+	for a, name := range algos {
 		opts := map[attributeName]attributeValue{
-			"value": attributeValue(a),
+			"value": attributeValue(a.String()),
 		}
 		if a == x.algorithm {
 			opts["selected"] = "selected"
@@ -92,7 +98,7 @@ func (x *algoElement) Create(document js.Value) js.Value {
 		el := htmlElement{
 			tag:    tagName("option"),
 			params: opts,
-			text:   innerText(a),
+			text:   innerText(name),
 		}
 		w.Call("append", el.Create(document))
 	}
@@ -100,7 +106,7 @@ func (x *algoElement) Create(document js.Value) js.Value {
 	return w
 }
 
-func (x *algoElement) GetAlgorithm() string {
+func (x *algoElement) GetAlgorithm() pkg.Algorithm {
 	return x.algorithm
 }
 

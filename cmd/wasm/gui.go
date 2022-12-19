@@ -96,7 +96,7 @@ func initGui() {
 		color.RGBA{R: 0xde, G: 0xad, B: 0x00, A: 0xff},
 		color.RGBA{R: 0x00, G: 0xde, B: 0xaf, A: 0xff},
 	}
-	algorithm := "pixelate"
+	algorithm := pkg.Pixelate
 	var factor byte = 5
 	quantizer = pkg.RGBQuantizer{Factor: factor}
 	normalizer = pkg.StraightNormalizer{Q: quantizer}
@@ -146,13 +146,13 @@ func initGui() {
 		}
 
 		switch algorithm {
-		case "average":
+		case pkg.Average:
 			b2 := pkg.ConstrainImage(img, palette, normalizer)
 			renderImageBuffer(b2, doc)
-		case "normalize":
+		case pkg.Normalize:
 			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize, normalizer)
 			renderImageBuffer(b2, doc)
-		case "pixelate":
+		case pkg.Pixelate:
 			b2 := pkg.PixelateImage(img, pkg.ModePixelate, normalizer)
 			renderImageBuffer(b2, doc)
 		default:
