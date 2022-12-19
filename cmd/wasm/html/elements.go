@@ -121,6 +121,10 @@ var Output htmlElement = htmlElement{
 	id:  attributeValue(OutputElementID),
 	tag: tagName("canvas"),
 }
+var Ascii htmlElement = htmlElement{
+	id:  attributeValue(AsciiElementID),
+	tag: tagName("div"),
+}
 
 var Root htmlElement = htmlElement{
 	tag:     tagName("div"),

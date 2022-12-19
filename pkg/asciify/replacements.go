@@ -1,5 +1,12 @@
 package asciify
 
+type ReplacementsType int
+
+const (
+	ReplacementAscii   ReplacementsType = iota
+	ReplacementUnicode ReplacementsType = iota
+)
+
 type Replacement struct {
 	Glyph string
 	Name  string

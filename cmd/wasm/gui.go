@@ -3,6 +3,7 @@ package main
 import (
 	"downsample/cmd/wasm/html"
 	"downsample/pkg"
+	"downsample/pkg/asciify"
 	"fmt"
 	"image"
 	"image/color"
@@ -76,6 +77,15 @@ func renderImageBuffer(img image.Image, doc js.Value) {
 	otx.Call("putImageData", data, 0, 0)
 }
 
+func renderAscii(output string, doc js.Value) {
+	imgOut := doc.Call("getElementById", html.OutputElementID.String())
+	imgOut.Set("width", 0)
+	imgOut.Set("height", 0)
+
+	asciiOut := doc.Call("getElementById", html.AsciiElementID.String())
+	asciiOut.Set("innerHTML", output)
+}
+
 type uiKind byte
 
 const (
@@ -90,6 +100,7 @@ func initGui() {
 	var img image.Image
 	var quantizer pkg.Quantizer
 	var normalizer pkg.Normalizer
+	var replacement []asciify.Replacement
 
 	palette := color.Palette{
 		color.RGBA{R: 0xba, G: 0xda, B: 0x55, A: 0xff},
@@ -100,6 +111,7 @@ func initGui() {
 	var factor byte = 5
 	quantizer = pkg.RGBQuantizer{Factor: factor}
 	normalizer = pkg.StraightNormalizer{Q: quantizer}
+	replacement = asciify.AsciiReplacements
 	newSize := len(palette)
 
 	root := html.Root.Create(doc)
@@ -113,6 +125,7 @@ func initGui() {
 	plt := html.NewPalette(palette)
 	tile := html.NewTileSize(pkg.GetTileSize())
 	norm := html.NewNormalizer()
+	rpl := html.NewReplacements()
 	elements := []struct {
 		src  creatable
 		el   js.Value
@@ -122,9 +135,11 @@ func initGui() {
 		{src: plt, el: plt.Create(doc), kind: uiControl},
 		{src: tile, el: tile.Create(doc), kind: uiControl},
 		{src: norm, el: norm.Create(doc), kind: uiControl},
+		{src: rpl, el: rpl.Create(doc), kind: uiControl},
 
 		{src: &html.Input, el: html.Input.Create(doc), kind: uiInput},
 		{src: &html.Output, el: html.Output.Create(doc), kind: uiOutput},
+		{src: &html.Ascii, el: html.Ascii.Create(doc), kind: uiOutput},
 	}
 
 	update := func() {
@@ -148,13 +163,23 @@ func initGui() {
 		switch algorithm {
 		case pkg.Average:
 			b2 := pkg.ConstrainImage(img, palette, normalizer)
+			renderAscii("", doc)
 			renderImageBuffer(b2, doc)
 		case pkg.Normalize:
 			b2 := pkg.PixelateImage(img, pkg.ModeAndNormalize, normalizer)
+			renderAscii("", doc)
 			renderImageBuffer(b2, doc)
 		case pkg.Pixelate:
 			b2 := pkg.PixelateImage(img, pkg.ModePixelate, normalizer)
+			renderAscii("", doc)
 			renderImageBuffer(b2, doc)
+		case pkg.Asciify:
+			a := asciify.Asciifier{
+				Replacements: replacement,
+				Replacer:     &asciify.HtmlReplacer{},
+				TileWidth:    pkg.GetTileSize(),
+			}
+			renderAscii(a.Asciify(img), doc)
 		default:
 			fmt.Println("ignoring the unknown algo", algo)
 			renderImageBuffer(img, doc)
@@ -192,7 +217,14 @@ func initGui() {
 			normalizer = pkg.AverageNormalizer{Q: quantizer}
 		}
 
-		if algorithm != "average" {
+		switch rpl.GetReplacementType() {
+		case asciify.ReplacementAscii:
+			replacement = asciify.AsciiReplacements
+		case asciify.ReplacementUnicode:
+			replacement = asciify.UnicodeReplacements
+		}
+
+		if algorithm != pkg.Average {
 			plt.Hide()
 		} else {
 			plt.Show()

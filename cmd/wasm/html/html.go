@@ -10,6 +10,7 @@ import (
 const (
 	InputElementID  attributeValue = "input-file"
 	OutputElementID attributeValue = "output"
+	AsciiElementID  attributeValue = "output-ascii"
 )
 
 func noSpecialChars(r rune) rune {
